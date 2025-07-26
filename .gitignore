@@ -1,0 +1,13 @@
+﻿################################################################################
+# 此 .gitignore 文件已由 Microsoft(R) Visual Studio 自动创建。
+################################################################################
+
+/.vs
+/bin/AnyCPU
+/obj
+/obj/Debug/Tryit/net451/.NETFramework,Version=v4.5.1.AssemblyAttributes.cs
+/Tryit/obj
+/Tryit.Wpf/obj
+/TryitTest/obj
+/TryitWpf.Test/bin/Debug/net8.0-windows
+/TryitWpf.Test/obj
