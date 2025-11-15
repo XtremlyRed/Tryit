@@ -60,7 +60,6 @@ public static partial class EnumerableExtensions
         {
             return collection2.Count != 0;
         }
-
         foreach (object? _ in source)
         {
             return true;
@@ -81,9 +80,9 @@ public static partial class EnumerableExtensions
         {
             return true;
         }
-        if (source is TSource[] array)
+        if (source is IList<TSource> array)
         {
-            return array.Length == 0;
+            return array.Count == 0;
         }
         else if (source is IReadOnlyCollection<TSource> @readonly)
         {
@@ -97,13 +96,10 @@ public static partial class EnumerableExtensions
         {
             return collection2.Count == 0;
         }
-
-        foreach (object? _ in source)
+        else
         {
-            return false;
+            return source.Any() == false;
         }
-
-        return true;
     }
 
     /// <summary>
@@ -118,26 +114,26 @@ public static partial class EnumerableExtensions
         {
             return false;
         }
-        if (source is TSource[] array)
+        if (source is IList<TSource> array)
         {
-            return array.Length != 0;
+            return array.Count != 0;
         }
-        if (source is ICollection<TSource> collection)
+        else if (source is IReadOnlyCollection<TSource> @readonly)
+        {
+            return @readonly.Count != 0;
+        }
+        else if (source is ICollection<TSource> collection)
         {
             return collection.Count != 0;
         }
-
-        if (source is ICollection collection2)
+        else if (source is ICollection collection2)
         {
             return collection2.Count != 0;
         }
-
-        foreach (object? _ in source)
+        else
         {
-            return true;
+            return source.Any();
         }
-
-        return false;
     }
 
     /// <summary>
@@ -195,16 +191,19 @@ public static partial class EnumerableExtensions
                 }
             }
         }
-        var index = 0;
-
-        foreach (TSource? item in source)
+        else
         {
-            if (filter(item))
-            {
-                return index;
-            }
+            var index = 0;
 
-            index++;
+            foreach (TSource? item in source)
+            {
+                if (filter(item))
+                {
+                    return index;
+                }
+
+                index++;
+            }
         }
 
         return -1;
@@ -246,21 +245,24 @@ public static partial class EnumerableExtensions
                 }
             }
         }
-
-        var forIndex = 0;
-        index = -1;
-
-        foreach (TSource? item in source)
+        else
         {
-            if (filter(item))
-            {
-                index = forIndex;
-                return true;
-            }
+            var forIndex = 0;
+            index = -1;
 
-            forIndex++;
+            foreach (TSource? item in source)
+            {
+                if (filter(item))
+                {
+                    index = forIndex;
+                    return true;
+                }
+
+                forIndex++;
+            }
         }
 
+        index = -1;
         return false;
     }
 
@@ -286,8 +288,6 @@ public static partial class EnumerableExtensions
                     yield return i;
                 }
             }
-
-            yield break;
         }
         else if (source is IReadOnlyList<TSource> @readonly)
         {
@@ -298,8 +298,6 @@ public static partial class EnumerableExtensions
                     yield return i;
                 }
             }
-
-            yield break;
         }
         else
         {
@@ -348,11 +346,11 @@ public static partial class EnumerableExtensions
             return source!;
         }
 
-        if (source is Target[] array)
+        if (source is IList<Target> list)
         {
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                action(array[i]);
+                action(list[i]);
             }
         }
         else if (source is IReadOnlyList<Target> @readonly)
@@ -360,13 +358,6 @@ public static partial class EnumerableExtensions
             for (int i = 0; i < @readonly.Count; i++)
             {
                 action(@readonly[i]);
-            }
-        }
-        else if (source is IList<Target> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                action(list[i]);
             }
         }
         else
@@ -394,11 +385,11 @@ public static partial class EnumerableExtensions
             return source!;
         }
 
-        if (source is Target[] array)
+        if (source is IList<Target> list)
         {
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                action(array[i], i);
+                action(list[i], i);
             }
         }
         else if (source is IReadOnlyList<Target> @readonly)
@@ -406,13 +397,6 @@ public static partial class EnumerableExtensions
             for (int i = 0; i < @readonly.Count; i++)
             {
                 action(@readonly[i], i);
-            }
-        }
-        else if (source is IList<Target> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                action(list[i], i);
             }
         }
         else
@@ -443,11 +427,11 @@ public static partial class EnumerableExtensions
             return source!;
         }
 
-        if (source is Target[] array)
+        if (source is IList<Target> list)
         {
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < list.Count; i++)
             {
-                await action(array[i]);
+                await action(list[i]);
             }
         }
         else if (source is IReadOnlyList<Target> @readonly)
@@ -455,13 +439,6 @@ public static partial class EnumerableExtensions
             for (int i = 0; i < @readonly.Count; i++)
             {
                 await action(@readonly[i]);
-            }
-        }
-        else if (source is IList<Target> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                await action(list[i]);
             }
         }
         else
@@ -490,9 +467,9 @@ public static partial class EnumerableExtensions
             return source!;
         }
 
-        if (source is Target[] array)
+        if (source is IList<Target> array)
         {
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < array.Count; i++)
             {
                 await action(array[i], i);
             }
@@ -502,13 +479,6 @@ public static partial class EnumerableExtensions
             for (int i = 0; i < @readonly.Count; i++)
             {
                 await action(@readonly[i], i);
-            }
-        }
-        else if (source is IList<Target> list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                await action(list[i], i);
             }
         }
         else
@@ -642,8 +612,41 @@ public static partial class EnumerableExtensions
         }
     }
 
-#if !NET6_0_OR_GREATER
+    /// <summary>
+    /// Combines elements of a collection into a single string, separated by a specified symbol.
+    /// </summary>
+    /// <typeparam name="T">Represents the type of elements in the collection being joined.</typeparam>
+    /// <param name="source">The collection of elements to be concatenated into a string.</param>
+    /// <param name="intervalSymbol">The string used to separate the elements in the resulting concatenated string.</param>
+    /// <returns>A single string that contains all elements from the collection, separated by the specified symbol.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the collection or the separator string is null.</exception>
+    public static string Join<T>(this IEnumerable<T> source, string intervalSymbol = ",")
+    {
+        _ = source ?? throw new ArgumentNullException(nameof(source));
+        _ = intervalSymbol ?? throw new ArgumentNullException(nameof(intervalSymbol));
 
+        return string.Join(intervalSymbol, source);
+    }
+
+    /// <summary>
+    /// Combines elements from a collection into a single string, using a specified interval symbol.
+    /// </summary>
+    /// <typeparam name="T">Represents the type of elements in the collection being processed.</typeparam>
+    /// <param name="source">The collection of elements to be joined into a string.</param>
+    /// <param name="selector">A function that transforms each element of the collection into a string.</param>
+    /// <param name="intervalSymbol">The string used to separate the elements in the resulting joined string.</param>
+    /// <returns>A single string that contains all the transformed elements separated by the specified interval symbol.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the collection, selector function, or interval symbol is null.</exception>
+    public static string Join<T>(this IEnumerable<T> source, Func<T, string> selector, string intervalSymbol = ",")
+    {
+        _ = source ?? throw new ArgumentNullException(nameof(source));
+        _ = selector ?? throw new ArgumentNullException(nameof(selector));
+        _ = intervalSymbol ?? throw new ArgumentNullException(nameof(intervalSymbol));
+
+        return string.Join(intervalSymbol, source.Select(selector));
+    }
+
+#if !NET6_0_OR_GREATER
 
     /// <summary>
     /// Divides a collection into smaller chunks of a specified size.

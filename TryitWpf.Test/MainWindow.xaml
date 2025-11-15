@@ -1,23 +1,27 @@
 ﻿<Window
-    x:Class="TryitWpf.Test.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:TryitWpf.Test"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
-    Width="800"
-    Height="450"
-    mc:Ignorable="d">
-
-    <AdornerDecorator PopupService.HostedName="main" PopupService.IsMainHosted="True">
-
-
-
-        <Grid />
-
-
-    </AdornerDecorator>
-
-
+  x:Class="TryitWpf.Test.MainWindow"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+  xmlns:local="clr-namespace:TryitWpf.Test"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:tryit="https://github.com/xtremlyred/Tryit.Wpf"
+  Title="MainWindow"
+  Width="800"
+  Height="450"
+  mc:Ignorable="d"
+>
+  <Grid x:Name="TestGrid" Width="100">
+    <Grid.Background>
+      <SolidColorBrush Color="Green" />
+    </Grid.Background>
+    <tryit:Interaction.Transitions>
+      <FadeTransition AnimationEvent="None" Play="{Binding ElementName=TestGrid, Path=IsMouseOver}" From="#0000" To="#F000" Duration="0:0:2" />
+      <TranslateTransition AnimationEvent="None" Delay="0:0:2" Play="{Binding ElementName=TestGrid, Path=IsMouseOver}" From="0,0" To="-100,0" Duration="0:0:2" />
+      <RotateTransition AnimationEvent="None" Play="{Binding ElementName=TestGrid, Path=IsMouseOver}" From="0" To="180" Duration="0:0:2" />
+      <ColorTransition AnimationEvent="None" Play="{Binding ElementName=TestGrid, Path=IsMouseOver}" PropertyPath="Background.(SolidColorBrush.Color)" From="Green" To="OrangeRed" Duration="0:0:2" />
+    </tryit:Interaction.Transitions>
+    <Line Margin="100" Fill="Red" Stroke="Red" StrokeDashArray="0.3 1.2" StrokeDashCap="Round" StrokeThickness="5" X1="0" X2="100" Y1="0" Y2="500" />
+  </Grid>
 </Window>

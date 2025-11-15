@@ -23,8 +23,10 @@ global using Panel = System.Windows.Controls.Panel;
 global using Point = System.Windows.Point;
 global using Size = System.Windows.Size;
 global using TextBox = System.Windows.Controls.TextBox;
+global using TriggerCollection = Microsoft.Xaml.Behaviors.TriggerCollection;
 global using UserContorl = System.Windows.Controls.UserControl;
 
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/xaml/behaviors", "Tryit.Wpf")]
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml/presentation", "Tryit.Wpf")]
 [assembly: XmlnsDefinition("https://github.com/xtremlyred/Tryit.Wpf", "Tryit.Wpf")]
 [assembly: XmlnsPrefix("Tryit.Wpf", "tryit")]

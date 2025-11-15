@@ -47,37 +47,25 @@ public static class StringExtensions
         return string.IsNullOrEmpty(value) == false;
     }
 
-    /// <summary>
-    /// Combines elements of a collection into a single string, separated by a specified symbol.
-    /// </summary>
-    /// <typeparam name="T">Represents the type of elements in the collection being joined.</typeparam>
-    /// <param name="source">The collection of elements to be concatenated into a string.</param>
-    /// <param name="intervalSymbol">The string used to separate the elements in the resulting concatenated string.</param>
-    /// <returns>A single string that contains all elements from the collection, separated by the specified symbol.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the collection or the separator string is null.</exception>
-    public static string Join<T>(this IEnumerable<T> source, string intervalSymbol = ",")
-    {
-        _ = source ?? throw new ArgumentNullException(nameof(source));
-        _ = intervalSymbol ?? throw new ArgumentNullException(nameof(intervalSymbol));
-
-        return string.Join(intervalSymbol, source);
-    }
+#if NET472 || NET451
 
     /// <summary>
-    /// Combines elements from a collection into a single string, using a specified interval symbol.
+    ///
     /// </summary>
-    /// <typeparam name="T">Represents the type of elements in the collection being processed.</typeparam>
-    /// <param name="source">The collection of elements to be joined into a string.</param>
-    /// <param name="selector">A function that transforms each element of the collection into a string.</param>
-    /// <param name="intervalSymbol">The string used to separate the elements in the resulting joined string.</param>
-    /// <returns>A single string that contains all the transformed elements separated by the specified interval symbol.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when the collection, selector function, or interval symbol is null.</exception>
-    public static string Join<T>(this IEnumerable<T> source, Func<T, string> selector, string intervalSymbol = ",")
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="childStr"></param>
+    /// <param name="comparisonType"></param>
+    /// <returns></returns>
+    public static bool Contains<T>(this string source, string childStr, StringComparison comparisonType = StringComparison.CurrentCultureIgnoreCase)
     {
-        _ = source ?? throw new ArgumentNullException(nameof(source));
-        _ = selector ?? throw new ArgumentNullException(nameof(selector));
-        _ = intervalSymbol ?? throw new ArgumentNullException(nameof(intervalSymbol));
+        if (source is null || childStr is null)
+        {
+            return false;
+        }
 
-        return string.Join(intervalSymbol, source.Select(selector));
+        return source.IndexOf(childStr, comparisonType) >= 0;
     }
+
+#endif
 }

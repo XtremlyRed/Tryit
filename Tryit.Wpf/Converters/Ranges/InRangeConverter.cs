@@ -22,8 +22,7 @@ public class InRangeConverter : TrueFalseConverter<object>
     public double MaxValue { get; set; }
 
     /// <summary>
-    /// Indicates whether equality comparisons should be included. It is a boolean property that can be set to true or
-    /// false.
+    /// Indicates whether equality comparisons should be included.
     /// </summary>
     public bool IncludeEquals { get; set; }
 
@@ -58,6 +57,8 @@ public class InRangeConverter : TrueFalseConverter<object>
     }
 }
 
+
+  
 public class InRangeConverterExtension : TrueFalseConverterExtension<InRangeConverter, object>
 {
     /// <summary>

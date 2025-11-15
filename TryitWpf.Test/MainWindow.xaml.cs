@@ -1,14 +1,10 @@
-﻿using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Globalization;
+using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Media.Animation;
+using Microsoft.Xaml.Behaviors;
 using Tryit.Wpf;
 
 namespace TryitWpf.Test
@@ -18,20 +14,57 @@ namespace TryitWpf.Test
     /// </summary>
     public partial class MainWindow : Window
     {
-        PopupService popupService = new PopupService();
+        private readonly PopupService popupService = new PopupService();
 
         public MainWindow()
         {
+            var a = new int();
+
             InitializeComponent();
 
             Loaded += MainWindow_Loaded;
         }
 
-        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            await Task.Delay(2000);
+            // var behaviorCollection = (BehaviorCollection)Activator.CreateInstance(typeof(BehaviorCollection), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, null, CultureInfo.CurrentCulture)!;
 
-            await popupService.ShowAsync("test");
+            //await Task.Delay(2000);
+
+            AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.GetTypes()).Where(x => typeof(AnimationTimeline).IsAssignableFrom(x)).Select(x => x.Name).ToList().ForEach(x => Debug.WriteLine(x));
+
+            //Dispatcher.InvokeAsync(async () =>
+            //{
+            //    await Task.Delay(2000);
+
+            TestGrid
+                .Animation() //
+                .BrushProperty(x => x.Background)
+                .From(Colors.Green)
+                .To(Colors.DeepSkyBlue)
+                .Duration(5000)
+                .Build()
+                .Play();
+
+            //RegisterName("back", TestGrid.Background);
+
+            //ColorAnimation colorAnimation = new ColorAnimation
+            //{
+            //    From = Colors.Black,
+            //    To = Colors.Red,
+            //    Duration = TimeSpan.FromSeconds(2)
+            //};
+
+            //Storyboard.SetTargetName(colorAnimation, "back");
+            //Storyboard.SetTargetProperty(colorAnimation, new PropertyPath(SolidColorBrush.ColorProperty));
+
+            //Storyboard storyboard = new Storyboard();
+            //storyboard.Children.Add(colorAnimation);
+            //storyboard.Begin( this);
+
+            //TestGrid.BeginAnimation(i => i.BrushProperty(x => x.Background).From(Colors.Green).To(Colors.Red).Duration(2000));
+
+            //await popupService.ShowAsync("test");
         }
     }
 }

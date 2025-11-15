@@ -50,20 +50,13 @@ public class TypeConverterExtensionsTests
     {
         // Arrange
         var source = new SourceType { Value = 42 };
-        TypeConverterExtensions.AppendConverter<SourceType, TargetType>(s => new TargetType
-        {
-            Value = s.Value,
-        });
+        TypeConverterExtensions.ConvertRegister<SourceType, TargetType>(s => new TargetType { Value = s.Value });
 
         // Act
         var result = source.ConvertTo<TargetType>();
 
         // Assert
-        Assert.AreEqual(
-            source.Value,
-            result.Value,
-            "Custom converter should properly convert values"
-        );
+        Assert.AreEqual(source.Value, result.Value, "Custom converter should properly convert values");
     }
 
     [TestMethod]
@@ -81,8 +74,8 @@ public class TypeConverterExtensionsTests
     public void AppendConverter_RegisterMultipleConverters_WorksCorrectly()
     {
         // Arrange
-        TypeConverterExtensions.AppendConverter<int, string>(i => i.ToString());
-        TypeConverterExtensions.AppendConverter<string, double>(s => double.Parse(s));
+        TypeConverterExtensions.ConvertRegister<int, string>(i => i.ToString());
+        TypeConverterExtensions.ConvertRegister<string, double>(s => double.Parse(s));
 
         // Act
         string stringResult = 42.ConvertTo<string>();
@@ -97,7 +90,7 @@ public class TypeConverterExtensionsTests
     public void ConvertTo_ConcurrentAccess_HandlesMultipleThreads()
     {
         // Arrange
-        TypeConverterExtensions.AppendConverter<int, string>(i => i.ToString());
+        TypeConverterExtensions.ConvertRegister<int, string>(i => i.ToString());
         const int threadCount = 10;
         var tasks = new Task[threadCount];
         var results = new bool[threadCount];
@@ -122,11 +115,7 @@ public class TypeConverterExtensionsTests
         Task.WaitAll(tasks);
 
         // Assert
-        CollectionAssert.DoesNotContain(
-            results,
-            false,
-            "All conversions should succeed in concurrent scenario"
-        );
+        CollectionAssert.DoesNotContain(results, false, "All conversions should succeed in concurrent scenario");
     }
 
     // Helper classes for testing custom conversion

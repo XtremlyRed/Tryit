@@ -30,9 +30,10 @@ public abstract class BindingCommandBase<T> : ICommand, INotifyPropertyChanged
     protected SynchronizationContext SynchronizationContext = SynchronizationContext.Current!;
 
     /// <summary>
-    ///
+    /// Initializes a new instance of the BindingCommandBase class with the specified execution condition delegate.
     /// </summary>
-    /// <param name="canExecute"></param>
+    /// <param name="canExecute">A delegate that determines whether the command can execute for a given parameter. If null, the command is always
+    /// considered executable.</param>
     protected BindingCommandBase(Func<T, bool>? canExecute)
     {
         this.canExecute = canExecute ?? (i => true);

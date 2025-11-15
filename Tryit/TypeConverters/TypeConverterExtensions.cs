@@ -101,7 +101,7 @@ public static class TypeConverterExtensions
     /// <typeparam name="TFrom">Represents the source type that will be converted from.</typeparam>
     /// <typeparam name="TTo">Represents the target type that will be converted to.</typeparam>
     /// <param name="converter">A function that defines how to convert from the source type to the target type.</param>
-    public static void AppendConverter<TFrom, TTo>(Func<TFrom, TTo> converter)
+    public static void ConvertRegister<TFrom, TTo>(Func<TFrom, TTo> converter)
     {
         var fromType = typeof(TFrom);
         var toType = typeof(TTo);
