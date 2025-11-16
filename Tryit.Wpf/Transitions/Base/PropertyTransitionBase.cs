@@ -41,7 +41,7 @@ public abstract class PropertyTransitionBase<T, TAnimation> : TransitionBase<T, 
     /// </summary>
     /// <returns>An enumerable collection containing a single animation instance configured for the associated object and
     /// property path.</returns>
-    protected override IEnumerable<TAnimation> AnimationBuild()
+    protected override IEnumerable<TAnimation> AnimationGenerate()
     {
         TAnimation animation = new TAnimation();
 

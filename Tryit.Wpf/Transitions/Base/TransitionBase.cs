@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Microsoft.Xaml.Behaviors;
@@ -45,21 +46,21 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     public bool IsPlaying => (bool)GetValue(IsPlayingProperty);
 
     /// <summary>
-    /// Gets or sets the animation event associated with this element.
+    /// Gets or sets the transition event that triggers a state change.
     /// </summary>
-    public AnimationEvent AnimationEvent
+    public TransitionEvent TransitionEvent
     {
-        get => (AnimationEvent)GetValue(AnimationEventProperty);
-        set => SetValue(AnimationEventProperty, value);
+        get => (TransitionEvent)GetValue(TransitionEventProperty);
+        set => SetValue(TransitionEventProperty, value);
     }
 
     /// <summary>
-    /// Identifies the AnimationEvent dependency property.
+    /// Identifies the TransitionEvent dependency property.
     /// </summary>
-    /// <remarks>This field is used to register and reference the AnimationEvent property within the
-    /// dependency property system. It is typically used when interacting with property system methods such as SetValue
-    /// or GetValue.</remarks>
-    public static readonly DependencyProperty AnimationEventProperty = DependencyProperty.Register(nameof(AnimationEvent), typeof(AnimationEvent), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(AnimationEvent.Loaded));
+    /// <remarks>This field is used to register and reference the TransitionEvent property with the Windows
+    /// Presentation Foundation (WPF) property system. It is typically used when adding property metadata or binding to
+    /// the TransitionEvent property in XAML or code.</remarks>
+    public static readonly DependencyProperty TransitionEventProperty = DependencyProperty.Register(nameof(TransitionEvent), typeof(TransitionEvent), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(TransitionEvent.Loaded));
 
     /// <summary>
     /// Gets or sets a value indicating whether playback is active.
@@ -257,7 +258,7 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     /// </summary>
     /// <returns>An enumerable collection of animation objects of type <typeparamref name="TAnimation"/> to be processed. The
     /// collection may be empty if no animations are defined.</returns>
-    protected abstract IEnumerable<TAnimation> AnimationBuild();
+    protected abstract IEnumerable<TAnimation> AnimationGenerate();
 
     /// <summary>
     /// Configures the specified animation instance with the current settings, such as start and end values, duration,
@@ -273,17 +274,17 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     {
         if (From is not null)
         {
-            AnimationHelpers<T, TAnimation>.FromSetter(animation, From);
+            TransitionHelpers<T, TAnimation>.FromSetter(animation, From);
         }
 
         if (To is not null)
         {
-            AnimationHelpers<T, TAnimation>.ToSetter(animation, To);
+            TransitionHelpers<T, TAnimation>.ToSetter(animation, To);
         }
 
         if (EasingFunction.WithEasing(EasingMode) is IEasingFunction easingFunction)
         {
-            AnimationHelpers<T, TAnimation>.EasingFunctionSetter(animation, easingFunction);
+            TransitionHelpers<T, TAnimation>.EasingFunctionSetter(animation, easingFunction);
         }
 
         animation.Duration = Duration;
@@ -315,11 +316,12 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
             return;
         }
 
-        SetValue(IsPlayingPropertyKey, true);
+        if (GetStoryboard(AssociatedObject) is Storyboard storyboard)
+        {
+            SetValue(IsPlayingPropertyKey, true);
 
-        Storyboard storyboard = GetStoryboard(AssociatedObject);
-
-        storyboard.Begin();
+            storyboard?.Begin();
+        }
     }
 
     #region event
@@ -336,40 +338,49 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     {
         base.OnAttached();
 
-        TransformGroup group = new TransformGroup();
-        group.Children.Add(new System.Windows.Media.TranslateTransform());
-        group.Children.Add(new System.Windows.Media.ScaleTransform());
-        group.Children.Add(new System.Windows.Media.RotateTransform());
-        group.Children.Add(new System.Windows.Media.SkewTransform());
+        TAnimation[] animations = AnimationGenerate().ToArray();
 
-        AssociatedObject.RenderTransform = group;
+        if (animations is null || animations.Length == 0)
+        {
+            return;
+        }
 
-        if (AnimationEvent == AnimationEvent.Loaded)
+        if (AssociatedObject.RenderTransform is not TransformGroup transformGroup)
+        {
+            transformGroup = new TransformGroup();
+            transformGroup.Children.Add(AssociatedObject.RenderTransform);
+            AssociatedObject.RenderTransform = transformGroup;
+        }
+
+        transformGroup.TryAdd<TranslateTransform>();
+        transformGroup.TryAdd<ScaleTransform>();
+        transformGroup.TryAdd<RotateTransform>();
+        transformGroup.TryAdd<SkewTransform>();
+
+        if (TransitionEvent == TransitionEvent.Loaded)
         {
             AssociatedObject.Loaded += OnLoaded;
         }
-        else if (AnimationEvent == AnimationEvent.DataContextChanged)
+        else if (TransitionEvent == TransitionEvent.DataContextChanged)
         {
             AssociatedObject.DataContextChanged += OnDataContextChanged;
         }
-        else if (AnimationEvent == AnimationEvent.MouseEnter)
+        else if (TransitionEvent == TransitionEvent.MouseEnter)
         {
             AssociatedObject.MouseEnter += OnMouseEnter;
         }
-        else if (AnimationEvent == AnimationEvent.MouseLeave)
+        else if (TransitionEvent == TransitionEvent.MouseLeave)
         {
             AssociatedObject.MouseLeave += OnMouseLeave;
         }
-        else if (AnimationEvent == AnimationEvent.GotFocus)
+        else if (TransitionEvent == TransitionEvent.GotFocus)
         {
             AssociatedObject.GotFocus += OnGotFocus;
         }
-        else if (AnimationEvent == AnimationEvent.LostFocus)
+        else if (TransitionEvent == TransitionEvent.LostFocus)
         {
             AssociatedObject.LostFocus += OnLostFocus;
         }
-
-        TAnimation[] animations = AnimationBuild().ToArray();
 
         Storyboard storyboard = new Storyboard();
 
@@ -399,27 +410,27 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
 
         storyboard.Children.Clear();
 
-        if (AnimationEvent == AnimationEvent.Loaded)
+        if (TransitionEvent == TransitionEvent.Loaded)
         {
             AssociatedObject.Loaded -= OnLoaded;
         }
-        else if (AnimationEvent == AnimationEvent.DataContextChanged)
+        else if (TransitionEvent == TransitionEvent.DataContextChanged)
         {
             AssociatedObject.DataContextChanged -= OnDataContextChanged;
         }
-        else if (AnimationEvent == AnimationEvent.MouseEnter)
+        else if (TransitionEvent == TransitionEvent.MouseEnter)
         {
             AssociatedObject.MouseEnter -= OnMouseEnter;
         }
-        else if (AnimationEvent == AnimationEvent.MouseLeave)
+        else if (TransitionEvent == TransitionEvent.MouseLeave)
         {
             AssociatedObject.MouseLeave -= OnMouseLeave;
         }
-        else if (AnimationEvent == AnimationEvent.GotFocus)
+        else if (TransitionEvent == TransitionEvent.GotFocus)
         {
             AssociatedObject.GotFocus -= OnGotFocus;
         }
-        else if (AnimationEvent == AnimationEvent.LostFocus)
+        else if (TransitionEvent == TransitionEvent.LostFocus)
         {
             AssociatedObject.LostFocus -= OnLostFocus;
         }
@@ -495,7 +506,13 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     private void OnCompleted(object? sender, EventArgs e)
     {
         SetValue(IsPlayingPropertyKey, false);
+
         OnAnimationCompleted();
+
+        if (CompleteCommand is not null && CompleteCommand.CanExecute(CompleteCommandParameter))
+        {
+            CompleteCommand.Execute(CompleteCommandParameter);
+        }
     }
 
     /// <summary>
@@ -515,6 +532,48 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
             transition.SetCurrentValue(PlayProperty, false);
         }
     }
+
+    #endregion
+
+
+    #region command
+
+    /// <summary>
+    /// Gets or sets the command that is executed when the completion action is triggered.
+    /// </summary>
+    /// <remarks>This property is typically bound to a command in the view model to handle completion logic,
+    /// such as submitting a form or finalizing a process. The command is invoked when the associated completion event
+    /// occurs in the UI.</remarks>
+    public ICommand CompleteCommand
+    {
+        get => (ICommand)GetValue(CompleteCommandProperty);
+        set => SetValue(CompleteCommandProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the CompleteCommand dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register and reference the CompleteCommand property in property system
+    /// operations, such as data binding and styling. Typically used in custom controls that derive from
+    /// TransitionBase<T, TAnimation>.</remarks>
+    public static readonly DependencyProperty CompleteCommandProperty = DependencyProperty.Register(nameof(CompleteCommand), typeof(ICommand), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(null));
+
+    /// <summary>
+    /// Gets or sets the parameter to pass to the command when the completion action is invoked.
+    /// </summary>
+    public object CompleteCommandParameter
+    {
+        get => GetValue(CompleteCommandParameterProperty);
+        set => SetValue(CompleteCommandParameterProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the CompleteCommandParameter dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register the CompleteCommandParameter property with the Windows
+    /// Presentation Foundation (WPF) property system. It is typically used when adding property metadata or binding to
+    /// the CompleteCommandParameter property in XAML or code.</remarks>
+    public static readonly DependencyProperty CompleteCommandParameterProperty = DependencyProperty.Register(nameof(CompleteCommandParameter), typeof(object), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(null));
 
     #endregion
 

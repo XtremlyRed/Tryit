@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace System.Linq;
 
@@ -92,13 +93,9 @@ public static partial class EnumerableExtensions
         {
             return collection.Count == 0;
         }
-        else if (source is ICollection collection2)
-        {
-            return collection2.Count == 0;
-        }
         else
         {
-            return source.Any() == false;
+            return source is ICollection collection2 ? collection2.Count == 0 : source.Any() == false;
         }
     }
 
@@ -126,13 +123,9 @@ public static partial class EnumerableExtensions
         {
             return collection.Count != 0;
         }
-        else if (source is ICollection collection2)
-        {
-            return collection2.Count != 0;
-        }
         else
         {
-            return source.Any();
+            return source is ICollection collection2 ? collection2.Count != 0 : source.Any();
         }
     }
 
@@ -150,12 +143,7 @@ public static partial class EnumerableExtensions
         _ = source ?? throw new ArgumentNullException(nameof(source));
         _ = filter ?? throw new ArgumentNullException(nameof(filter));
 
-        if (condition)
-        {
-            return source.Where(filter);
-        }
-
-        return source;
+        return condition ? source.Where(filter) : source;
     }
 
     /// <summary>
@@ -193,7 +181,7 @@ public static partial class EnumerableExtensions
         }
         else
         {
-            var index = 0;
+            int index = 0;
 
             foreach (TSource? item in source)
             {
@@ -247,7 +235,7 @@ public static partial class EnumerableExtensions
         }
         else
         {
-            var forIndex = 0;
+            int forIndex = 0;
             index = -1;
 
             foreach (TSource? item in source)
@@ -301,7 +289,7 @@ public static partial class EnumerableExtensions
         }
         else
         {
-            var index = 0;
+            int index = 0;
 
             foreach (TSource? item in source)
             {
@@ -515,7 +503,7 @@ public static partial class EnumerableExtensions
         }
         else
         {
-            foreach (var item in source)
+            foreach (object? item in source)
             {
                 action(item);
             }
@@ -545,8 +533,8 @@ public static partial class EnumerableExtensions
 
             return;
         }
-        var index = 0;
-        foreach (var item in source)
+        int index = 0;
+        foreach (object? item in source)
         {
             action(item, index++);
         }
@@ -574,7 +562,7 @@ public static partial class EnumerableExtensions
         }
         else
         {
-            foreach (var item in source)
+            foreach (object? item in source)
             {
                 await action(item);
             }
@@ -605,8 +593,8 @@ public static partial class EnumerableExtensions
 
             return;
         }
-        var index = 0;
-        foreach (var item in source)
+        int index = 0;
+        foreach (object? item in source)
         {
             await action(item, index++);
         }
@@ -646,11 +634,54 @@ public static partial class EnumerableExtensions
         return string.Join(intervalSymbol, source.Select(selector));
     }
 
-#if !NET6_0_OR_GREATER
+    /// <summary>
+    /// Creates a read-only collection that contains the elements of the specified sequence.
+    /// </summary>
+    /// <remarks>If the source implements <see cref="ReadOnlyCollection{T}"/>, the same instance is returned.
+    /// If the source implements <see cref="IList{T}"/>, the returned collection wraps the existing list. Otherwise, the
+    /// elements are copied into a new list.</remarks>
+    /// <typeparam name="T">The type of elements in the collection.</typeparam>
+    /// <param name="source">The sequence of elements to include in the read-only collection. Cannot be null.</param>
+    /// <returns>A <see cref="ReadOnlyCollection{T}"/> that contains the elements of the input sequence. If the source is already
+    /// a read-only collection, it is returned directly.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="source"/> is null.</exception>
+    public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> source)
+    {
+        _ = source ?? throw new ArgumentNullException(nameof(source));
+        if (source is ReadOnlyCollection<T> readOnlyCollection)
+        {
+            return readOnlyCollection;
+        }
+        if (source is IList<T> list)
+        {
+            return new ReadOnlyCollection<T>(list); // Use the existing list directly
+        }
+        return new ReadOnlyCollection<T>(source.ToList());
+    }
 
     /// <summary>
-    /// Divides a collection into smaller chunks of a specified size.
+    /// Creates a read-only dictionary from an enumerable collection according to specified key and element selector
+    /// functions.
     /// </summary>
+    /// <remarks>If the key selector produces duplicate keys, an exception is thrown. The returned dictionary
+    /// is immutable; attempts to modify it will result in a runtime exception.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+    /// <typeparam name="TKey">The type of the keys returned by the key selector function. Must be non-nullable.</typeparam>
+    /// <typeparam name="TElement">The type of the values returned by the element selector function.</typeparam>
+    /// <param name="source">The sequence of elements to create the dictionary from.</param>
+    /// <param name="keySelector">A function to extract a key from each element in the source collection. Each key must be unique and non-null.</param>
+    /// <param name="elementSelector">A function to map each element in the source collection to a value in the resulting dictionary.</param>
+    /// <returns>A read-only dictionary that contains keys and values selected from the input sequence.</returns>
+    public static ReadOnlyDictionary<TKey, TElement> ToReadOnlyDictionary<TSource, TKey, TElement>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        where TKey : notnull
+    {
+        var dict = source.ToDictionary(keySelector, elementSelector);
+
+        return new ReadOnlyDictionary<TKey, TElement>(dict);
+    }
+
+#if !NETCOREAPP3_1_OR_GREATER
+
     /// <typeparam name="TSource">Represents the type of elements in the collection being chunked.</typeparam>
     /// <param name="targets">The collection to be divided into smaller segments.</param>
     /// <param name="segmentSize">Specifies the maximum number of elements in each chunk.</param>

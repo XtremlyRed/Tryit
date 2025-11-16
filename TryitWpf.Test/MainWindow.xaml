@@ -12,7 +12,23 @@
   Height="450"
   mc:Ignorable="d"
 >
-  <Grid x:Name="TestGrid" Width="100">
+  <Window.Resources>
+    <i:BindingAgent x:Key="BindingAgent" DataContext="{Binding}" />
+  </Window.Resources>
+  <ListView ItemsSource="{Binding Array}" VirtualizingPanel.IsContainerVirtualizable="True" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.ScrollUnit="Item" VirtualizingPanel.VirtualizationMode="Recycling">
+    <ListView.ItemTemplate>
+      <DataTemplate>
+        <Border Width="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=ActualWidth}" Height="30" Margin="0,3" BorderBrush="Red" BorderThickness="1" CornerRadius="4">
+          <tryit:Interaction.Transitions>
+            <FadeTransition CompleteCommand="{Binding Source={StaticResource BindingAgent}, Path=DataContext.CompleteCommand}" CompleteCommandParameter="{Binding}" From="#0000" To="#F000" Duration="0:0:1" />
+            <TranslateTransition From="30,30" To="000,0" Duration="0:0:1" />
+          </tryit:Interaction.Transitions>
+          <TextBlock Margin="5,0" VerticalAlignment="Center" Text="{Binding}" />
+        </Border>
+      </DataTemplate>
+    </ListView.ItemTemplate>
+  </ListView>
+  <!--<Grid x:Name="TestGrid" Width="100">
     <Grid.Background>
       <SolidColorBrush Color="Green" />
     </Grid.Background>
@@ -23,5 +39,5 @@
       <ColorTransition AnimationEvent="None" Play="{Binding ElementName=TestGrid, Path=IsMouseOver}" PropertyPath="Background.(SolidColorBrush.Color)" From="Green" To="OrangeRed" Duration="0:0:2" />
     </tryit:Interaction.Transitions>
     <Line Margin="100" Fill="Red" Stroke="Red" StrokeDashArray="0.3 1.2" StrokeDashCap="Round" StrokeThickness="5" X1="0" X2="100" Y1="0" Y2="500" />
-  </Grid>
+  </Grid>-->
 </Window>

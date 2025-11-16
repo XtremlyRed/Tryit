@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tryit.Wpf\Tryit.Wpf.csproj" />
+    <ProjectReference Include="..\Tryit\Tryit.csproj" />
   </ItemGroup>
 
 

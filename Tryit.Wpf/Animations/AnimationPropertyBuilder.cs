@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Tryit.Wpf.Internals;
+namespace Tryit.Wpf;
 
 /// <summary>
 /// Provides a fluent API for selecting and animating properties of a specified dependency object.

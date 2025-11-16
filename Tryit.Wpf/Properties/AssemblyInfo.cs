@@ -6,6 +6,7 @@ global using System.Runtime.InteropServices;
 global using System.Windows.Controls.Primitives;
 global using System.Windows.Data;
 global using System.Windows.Markup;
+global using System.Windows.Threading;
 global using Application = System.Windows.Application;
 global using BF = System.Reflection.BindingFlags;
 global using Binding = System.Windows.Data.Binding;
@@ -30,6 +31,10 @@ global using UserContorl = System.Windows.Controls.UserControl;
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml/presentation", "Tryit.Wpf")]
 [assembly: XmlnsDefinition("https://github.com/xtremlyred/Tryit.Wpf", "Tryit.Wpf")]
 [assembly: XmlnsPrefix("Tryit.Wpf", "tryit")]
+
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/winfx/2006/xaml/presentation", "Tryit.Wpf.Threading")]
+[assembly: XmlnsDefinition("https://github.com/xtremlyred/Tryit.Wpf", "Tryit.Wpf.Threading")]
+[assembly: XmlnsPrefix("Tryit.Wpf.Threading", "tryit")]
 
 namespace System.Runtime.CompilerServices
 {

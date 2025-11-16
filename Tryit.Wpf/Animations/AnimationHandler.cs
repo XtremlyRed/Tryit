@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Media.Animation;
 
-namespace Tryit.Wpf.Internals;
+namespace Tryit.Wpf;
 
 /// <summary>
 /// Provides functionality to manage and play an animation on a specified dependency property of a WPF dependency
