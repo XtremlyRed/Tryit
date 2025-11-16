@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace System;
+﻿namespace System;
 
 /// <summary>
 /// Provides extension methods for various numeric types to constrain values within specified minimum and maximum
@@ -75,6 +73,21 @@ public static partial class MathExtensions
         return -offset <= decimalValue && decimalValue <= offset;
     }
 
+    /// <summary>
+    /// Determines whether the specified double-precision floating-point value is equal to another value within a
+    /// specified number of decimal digits of precision.
+    /// </summary>
+    /// <remarks>This method is useful for comparing floating-point values where exact equality is not
+    /// reliable due to precision limitations. The supported values for digits depend on the implementation and may be
+    /// limited.</remarks>
+    /// <param name="input">The double-precision floating-point value to compare.</param>
+    /// <param name="compare">The value to compare against.</param>
+    /// <param name="digits">The number of decimal digits to use for the comparison. Must be greater than 0. The comparison checks if the
+    /// values are equal within this precision. The default is 6.</param>
+    /// <returns>true if the input value is equal to the compare value within the specified number of decimal digits; otherwise,
+    /// false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if digits is less than or equal to 0.</exception>
+    /// <exception cref="NotSupportedException">Thrown if the specified digits value is not supported by the implementation.</exception>
     public static bool CoerceEquals(this double input, double compare, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -88,6 +101,18 @@ public static partial class MathExtensions
         return compare - offset <= input && input <= compare + offset;
     }
 
+    /// <summary>
+    /// Determines whether the specified floating-point value is equal to another value within a given number of decimal
+    /// digits of precision.
+    /// </summary>
+    /// <remarks>This method performs a tolerance-based comparison, allowing for minor differences due to
+    /// floating-point precision. The supported range of digits may be limited by the implementation.</remarks>
+    /// <param name="input">The floating-point value to compare.</param>
+    /// <param name="compare">The value to compare against.</param>
+    /// <param name="digits">The number of decimal digits to use for the comparison. Must be greater than zero.</param>
+    /// <returns>true if the two values are equal within the specified number of decimal digits; otherwise, false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if digits is less than or equal to zero.</exception>
+    /// <exception cref="NotSupportedException">Thrown if the specified number of digits is not supported.</exception>
     public static bool CoerceEquals(this float input, float compare, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -101,6 +126,20 @@ public static partial class MathExtensions
         return compare - offset <= input && input <= compare + offset;
     }
 
+    /// <summary>
+    /// Determines whether the specified decimal value is equal to a comparison value within a given number of decimal
+    /// places.
+    /// </summary>
+    /// <remarks>This method checks whether the input value falls within the range defined by compare ±
+    /// offset, where offset is determined by the number of decimal places specified. This is useful for comparing
+    /// decimal values where minor differences due to rounding or precision are acceptable.</remarks>
+    /// <param name="input">The decimal value to compare.</param>
+    /// <param name="compare">The decimal value to compare against.</param>
+    /// <param name="digits">The number of decimal places to use when determining equality. Must be greater than zero.</param>
+    /// <returns>true if the input value is within the specified number of decimal places of the comparison value; otherwise,
+    /// false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if digits is less than or equal to zero.</exception>
+    /// <exception cref="NotSupportedException">Thrown if the specified number of digits is not supported.</exception>
     public static bool CoerceEquals(this decimal input, decimal compare, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -362,7 +401,6 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
-
     public static ulong CoerceAtLeast(this ulong input, ulong minValue)
     {
         return input <= minValue ? minValue : input;
@@ -484,7 +522,6 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="maxValue">最大值。</param>
     /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
-
     public static ulong CoerceAtMost(this ulong input, ulong maxValue)
     {
         return input >= maxValue ? maxValue : input;
@@ -494,6 +531,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static byte CoerceWhen(this byte trueValue, bool condition, byte falseValue)
@@ -505,6 +543,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static short CoerceWhen(this short trueValue, bool condition, short falseValue)
@@ -516,6 +555,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static int CoerceWhen(this int trueValue, bool condition, int falseValue)
@@ -527,6 +567,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static long CoerceWhen(this long trueValue, bool condition, long falseValue)
@@ -538,6 +579,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static float CoerceWhen(this float trueValue, bool condition, float falseValue)
@@ -549,6 +591,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static double CoerceWhen(this double trueValue, bool condition, double falseValue)
@@ -560,6 +603,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static decimal CoerceWhen(this decimal trueValue, bool condition, decimal falseValue)
@@ -571,6 +615,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static sbyte CoerceWhen(this sbyte trueValue, bool condition, sbyte falseValue)
@@ -582,6 +627,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static ushort CoerceWhen(this ushort trueValue, bool condition, ushort falseValue)
@@ -593,6 +639,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static uint CoerceWhen(this uint trueValue, bool condition, uint falseValue)
@@ -604,6 +651,7 @@ public static partial class MathExtensions
     /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
     /// </summary>
     /// <param name="trueValue">输入值。</param>
+    /// <param name="condition"></param>
     /// <param name="falseValue">不满足条件返回值。</param>
     /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
     public static ulong CoerceWhen(this ulong trueValue, bool condition, ulong falseValue)
@@ -619,6 +667,7 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
     public static bool VerifyIn(this double input, double minValue, double maxValue, bool includeEquals = true)
     {
@@ -635,8 +684,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this float input, float minValue, float maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -652,8 +701,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this decimal input, decimal minValue, decimal maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -669,8 +718,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this int input, int minValue, int maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -686,8 +735,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this short input, short minValue, short maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -703,8 +752,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this byte input, byte minValue, byte maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -720,8 +769,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this sbyte input, sbyte minValue, sbyte maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -737,8 +786,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this ushort input, ushort minValue, ushort maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -754,8 +803,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    ///  <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this uint input, uint minValue, uint maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -771,8 +820,8 @@ public static partial class MathExtensions
     /// <param name="input">输入值。</param>
     /// <param name="minValue">最小值。</param>
     /// <param name="maxValue">最大值。</param>
+    /// <param name="includeEquals"></param>
     /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
-
     public static bool VerifyIn(this ulong input, ulong minValue, ulong maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -921,9 +970,6 @@ public static partial class MathExtensions
     #region number
 
 
-
-
-
     /// <summary>
     /// Determines if the provided object is a numeric type and outputs its value as a double.
     /// </summary>
@@ -1014,7 +1060,7 @@ public static partial class MathExtensions
     /// Defines static Type fields for various numeric data types in C#. These include signed and unsigned integers,
     /// floating-point, and decimal types.
     /// </summary>
-    readonly static Type sbyteType = typeof(sbyte),
+    private static readonly Type sbyteType = typeof(sbyte),
         byteType = typeof(byte),
         shortType = typeof(short),
         ushortType = typeof(ushort),
@@ -1033,24 +1079,7 @@ public static partial class MathExtensions
     /// <returns>True if the type is numeric; otherwise, false.</returns>
     public static bool IsNumberType(this Type target)
     {
-        if (
-            target == sbyteType
-            || target == byteType
-            || target == shortType
-            || target == ushortType
-            || target == intType
-            || target == uintType
-            || target == longType
-            || target == ulongType
-            || target == floatType
-            || target == doubleType
-            || target == decimalType
-        )
-        {
-            return true;
-        }
-
-        return false;
+        return target == sbyteType || target == byteType || target == shortType || target == ushortType || target == intType || target == uintType || target == longType || target == ulongType || target == floatType || target == doubleType || target == decimalType;
     }
 
     /// <summary>
@@ -1061,25 +1090,14 @@ public static partial class MathExtensions
     /// <returns>True if the value is a numeric type; otherwise, false.</returns>
     public static bool IsNumberCollection<T>(this T target)
     {
-        return target
-            is ICollection<sbyte>
-                or ICollection<byte>
-                or ICollection<short>
-                or ICollection<ushort>
-                or ICollection<int>
-                or ICollection<uint>
-                or ICollection<long>
-                or ICollection<ulong>
-                or ICollection<float>
-                or ICollection<double>
-                or ICollection<decimal>;
+        return target is ICollection<sbyte> or ICollection<byte> or ICollection<short> or ICollection<ushort> or ICollection<int> or ICollection<uint> or ICollection<long> or ICollection<ulong> or ICollection<float> or ICollection<double> or ICollection<decimal>;
     }
 
     /// <summary>
     /// Defines static Type fields for various numeric data types in C#. These include signed and unsigned integers,
     /// floating-point, and decimal types.
     /// </summary>
-    readonly static Type sbyteCollectionType = typeof(ICollection<sbyte>),
+    private static readonly Type sbyteCollectionType = typeof(ICollection<sbyte>),
         byteCollectionType = typeof(ICollection<byte>),
         shortCollectionType = typeof(ICollection<short>),
         ushortCollectionType = typeof(ICollection<ushort>),
@@ -1098,8 +1116,7 @@ public static partial class MathExtensions
     /// <returns>True if the type is numeric; otherwise, false.</returns>
     public static bool IsNumberCollectionType(this Type target)
     {
-        if (
-            target == sbyteCollectionType
+        return target == sbyteCollectionType
             || target == byteCollectionType
             || target == shortCollectionType
             || target == ushortCollectionType
@@ -1109,13 +1126,7 @@ public static partial class MathExtensions
             || target == ulongCollectionType
             || target == floatCollectionType
             || target == doubleCollectionType
-            || target == decimalCollectionType
-        )
-        {
-            return true;
-        }
-
-        return false;
+            || target == decimalCollectionType;
     }
 
     #endregion

@@ -16,7 +16,6 @@ public static class EasingFunctionExtensions
     /// <remarks>Use this method to obtain a concrete <see cref="IEasingFunction"/> implementation for
     /// animation scenarios based on the provided <paramref name="easingFunction"/> and <paramref name="easingMode"/>
     /// values.</remarks>
-    /// <typeparam name="T"></typeparam>
     /// <param name="easingFunction">The type of easing function to create.</param>
     /// <param name="easingMode">The easing mode to apply to the created easing function.</param>
     /// <returns>An <see cref="IEasingFunction"/> instance configured with the specified easing function and mode, or <see

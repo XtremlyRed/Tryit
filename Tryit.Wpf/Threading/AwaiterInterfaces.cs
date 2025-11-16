@@ -26,7 +26,7 @@ public interface IAwaitable<out TAwaiter>
 /// <remarks>Implement this interface to enable custom awaitable patterns that work with the C# await keyword. The
 /// GetAwaiter method is called by the compiler to retrieve the awaiter, which controls how the asynchronous operation
 /// is awaited and how the result is produced.</remarks>
-/// <typeparam name="TAwaiter">The type of the awaiter object returned by the GetAwaiter method. Must implement IAwaiter<TResult>.</typeparam>
+/// <typeparam name="TAwaiter">The type of the awaiter object returned by the GetAwaiter method. Must implement IAwaiter{TResult}.</typeparam>
 /// <typeparam name="TResult">The type of the result produced when the await operation completes.</typeparam>
 public interface IAwaitable<out TAwaiter, out TResult>
     where TAwaiter : IAwaiter<TResult>
@@ -95,7 +95,7 @@ public interface IAwaiter<out TResult> : INotifyCompletion
 /// </summary>
 /// <remarks>Implementations of this interface enable advanced scenarios where critical notification of completion
 /// is required, such as in low-level synchronization or custom awaitable patterns. This interface extends both
-/// IAwaiter<TResult> and ICriticalNotifyCompletion, allowing consumers to await operations with critical continuation
+/// IAwaiter{TResult} and ICriticalNotifyCompletion, allowing consumers to await operations with critical continuation
 /// semantics.</remarks>
 /// <typeparam name="TResult">The type of the result produced by the asynchronous operation.</typeparam>
 public interface ICriticalAwaiter<out TResult> : IAwaiter<TResult>, ICriticalNotifyCompletion { }

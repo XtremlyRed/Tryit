@@ -4,7 +4,7 @@ using System.Windows.Media.Media3D;
 namespace Tryit.Wpf;
 
 /// <summary>
-/// Represents a transition that animates a property of type <see cref="Quaternion?"/> using a <see
+/// Represents a transition that animates a property of type <see cref="Quaternion"/> using a <see
 /// cref="QuaternionAnimation"/>.
 /// </summary>
 /// <remarks>Use this class to smoothly interpolate between quaternion values, such as for animating rotations in

@@ -22,7 +22,7 @@ public static class AnimationExtensions
     /// </summary>
     /// <typeparam name="T">The type of the dependency object. Must derive from DependencyObject.</typeparam>
     /// <param name="dependencyObject">The dependency object for which to configure property animations. Cannot be null.</param>
-    /// <returns>An AnimationPropertySelector<T> instance that can be used to specify and configure animations for the given
+    /// <returns>An AnimationPropertySelector{T} instance that can be used to specify and configure animations for the given
     /// dependency object.</returns>
     public static AnimationPropertySelector<T> Animation<T>(this T dependencyObject)
         where T : DependencyObject
@@ -40,7 +40,7 @@ public static class AnimationExtensions
     /// setup.</remarks>
     /// <typeparam name="T">The type of the dependency object to animate. Must derive from DependencyObject.</typeparam>
     /// <param name="dependencyObject">The dependency object to which the animations will be applied. Cannot be null.</param>
-    /// <param name="config">A delegate that receives an AnimationPropertySelector<T> to configure the properties and animations to apply.
+    /// <param name="config">A delegate that receives an AnimationPropertySelector{T} to configure the properties and animations to apply.
     /// Cannot be null.</param>
     public static void BeginAnimation<T>(this T dependencyObject, Action<AnimationPropertySelector<T>> config)
         where T : DependencyObject

@@ -54,4 +54,11 @@ public class NotNullOrEmptyConverter : TrueFalseConverter<IEnumerable>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that returns a Boolean value indicating whether a collection is not null and contains at
+/// least one element.
+/// </summary>
+/// <remarks>This extension is typically used in XAML data binding scenarios to enable or disable UI elements
+/// based on whether a collection has items. It evaluates to <see langword="true"/> if the bound collection is not null
+/// and contains one or more elements; otherwise, it evaluates to <see langword="false"/>.</remarks>
 public class NotNullOrEmptyConverterExtension : TrueFalseConverterExtension<NotNullOrEmptyConverter, IEnumerable> { }

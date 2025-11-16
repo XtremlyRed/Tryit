@@ -14,4 +14,11 @@ public class EqualConverter : CompareConverter
         : base(CompareMode.Equal) { }
 }
 
+/// <summary>
+/// Provides a markup extension that returns a value indicating whether two objects are equal, for use in XAML data
+/// binding scenarios.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to compare a bound value to a specified value and return a
+/// Boolean result. It is useful for enabling or disabling UI elements, triggering visual states, or other scenarios
+/// where equality comparison is needed in markup.</remarks>
 public class EqualConverterExtension : TrueFalseConverterExtension<EqualConverter, IComparable> { }

@@ -14,4 +14,11 @@ public class LessThanOrEqualConverter : CompareConverter
         : base(CompareMode.LessThanOrEqual) { }
 }
 
+/// <summary>
+/// Provides a markup extension that supplies a value converter for determining whether a value is less than or equal to
+/// a comparison value.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to enable conditional logic based on value comparisons. It
+/// returns <see langword="true"/> if the input value is less than or equal to the specified comparison value;
+/// otherwise, it returns <see langword="false"/>.</remarks>
 public class LessThanOrEqualConverterExtension : TrueFalseConverterExtension<LessThanOrEqualConverter, IComparable> { }

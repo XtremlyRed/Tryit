@@ -43,4 +43,11 @@ public class NullOrWhiteSpaceConverter : TrueFalseConverter<string>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that converts a string value to a Boolean based on whether the string is null, empty, or
+/// consists only of white-space characters.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to enable conditional logic based on the presence or absence
+/// of meaningful text in a string. It returns <see langword="true"/> if the input string is null, empty, or contains
+/// only white-space characters; otherwise, it returns <see langword="false"/>.</remarks>
 public class NullOrWhiteSpaceConverterExtension : TrueFalseConverterExtension<NullOrWhiteSpaceConverter, string> { }

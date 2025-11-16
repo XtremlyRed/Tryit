@@ -22,6 +22,17 @@ public abstract class TrueFalseConverter<T> : ValueConverterBase<T>, IValueConve
     public object? False { get; set; }
 }
 
+/// <summary>
+/// Provides a base markup extension for creating value converters that map between true and false states using
+/// customizable values.
+/// </summary>
+/// <remarks>This abstract class is intended for use in XAML scenarios where a value converter is needed to
+/// translate between Boolean values and custom representations. It allows specifying the values to use for true and
+/// false states via the True and False properties. Derived classes can override the ProvideValue method to customize
+/// converter instantiation or configuration.</remarks>
+/// <typeparam name="T">The type of the true/false value converter to instantiate. Must inherit from TrueFalseConverter{TP} and have a
+/// parameterless constructor.</typeparam>
+/// <typeparam name="TP">The type of the values used to represent true and false states in the converter.</typeparam>
 public abstract class TrueFalseConverterExtension<T, TP> : MarkupExtension
     where T : TrueFalseConverter<TP>, new()
 {

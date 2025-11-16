@@ -29,4 +29,10 @@ public class BooleanConverter : TrueFalseConverter<bool>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that converts Boolean values to and from their string representations for use in XAML.
+/// </summary>
+/// <remarks>This class enables binding Boolean values in XAML to string representations such as "True" and
+/// "False". It is typically used to facilitate value conversion scenarios in XAML markup where Boolean values need to
+/// be displayed or interpreted as strings.</remarks>
 public class BooleanConverterExtension : TrueFalseConverterExtension<BooleanConverter, bool> { }

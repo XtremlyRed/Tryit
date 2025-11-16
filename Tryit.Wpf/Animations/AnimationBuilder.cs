@@ -10,8 +10,8 @@ namespace Tryit.Wpf;
 /// Provides a fluent builder for configuring and creating property animations on a specified dependency object and
 /// dependency property.
 /// </summary>
-/// <remarks>Use PropertyAnimationBuilder<T, TProperty> to configure animation parameters such as duration, start
-/// and end values, easing functions, and playback options before constructing an AnimationHandler<T> to execute the
+/// <remarks>Use PropertyAnimationBuilder{T, TProperty} to configure animation parameters such as duration, start
+/// and end values, easing functions, and playback options before constructing an AnimationHandler{T} to execute the
 /// animation. This builder supports method chaining for concise and readable animation setup. Only specific property
 /// types are supported; attempting to animate an unsupported type will result in a NotSupportedException.</remarks>
 /// <typeparam name="T">The type of the dependency object that will be the target of the animation. Must derive from DependencyObject.</typeparam>
@@ -223,10 +223,10 @@ public sealed class PropertyAnimationBuilder<T, TProperty>
     }
 
     /// <summary>
-    /// Creates and returns a new instance of the AnimationHandler<T> class configured with the specified dependency
+    /// Creates and returns a new instance of the AnimationHandler{T} class configured with the specified dependency
     /// object, dependency property, animation, and callback.
     /// </summary>
-    /// <returns>An AnimationHandler<T> instance initialized with the provided parameters.</returns>
+    /// <returns>An AnimationHandler{T} instance initialized with the provided parameters.</returns>
     public AnimationHandler<T> Build()
     {
         var handler = new AnimationHandler<T>(dependencyObject, dependencyProperty, animationSetter.Animation, callback);

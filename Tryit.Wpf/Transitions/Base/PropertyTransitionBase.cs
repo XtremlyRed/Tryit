@@ -11,7 +11,7 @@ namespace Tryit.Wpf;
 /// <summary>
 /// Base class for property-based transitions.
 /// Provides a skeletal implementation that creates an animation instance and binds it
-/// to the <see cref="AssociatedObject"/> and a property specified by <see cref="PropertyPath"/>.
+/// to the <see cref="Behavior{T}.AssociatedObject"/> and a property specified by <see cref="PropertyPath"/>.
 /// </summary>
 /// <typeparam name="T">The type of the associated object the transition targets (must be a DependencyObject).</typeparam>
 /// <typeparam name="TAnimation">The animation timeline type used for the transition (must inherit from <see cref="AnimationTimeline"/> and have a parameterless constructor).</typeparam>

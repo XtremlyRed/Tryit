@@ -33,4 +33,9 @@ public class NullConverter : TrueFalseConverter<object>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that supplies a converter which always returns null, regardless of the input value.
+/// </summary>
+/// <remarks>This extension is typically used in XAML scenarios where a value converter is required, but no actual
+/// conversion is needed. It can be useful for disabling data binding or for placeholder purposes in markup.</remarks>
 public class NullConverterExtension : TrueFalseConverterExtension<NullConverter, object> { }

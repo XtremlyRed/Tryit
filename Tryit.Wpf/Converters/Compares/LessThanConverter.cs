@@ -14,4 +14,12 @@ public class LessThanConverter : CompareConverter
         : base(CompareMode.LessThan) { }
 }
 
+/// <summary>
+/// Provides a markup extension that returns a value based on whether the input is less than a specified comparison
+/// value.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to perform value comparisons in data bindings. It evaluates
+/// whether the bound value is less than the provided comparison value and returns a corresponding result, such as a
+/// Boolean or a custom value. The comparison uses the IComparable interface, so both values must be
+/// comparable.</remarks>
 public class LessThanConverterExtension : TrueFalseConverterExtension<LessThanConverter, IComparable> { }

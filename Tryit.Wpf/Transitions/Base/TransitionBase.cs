@@ -12,7 +12,7 @@ namespace Tryit.Wpf;
 /// value type. This class enables the configuration and control of property-based animations triggered by various UI
 /// events.
 /// </summary>
-/// <remarks>TransitionBase<T, TAnimation> is designed for use in WPF applications to facilitate reusable,
+/// <remarks>TransitionBase{T, TAnimation} is designed for use in WPF applications to facilitate reusable,
 /// configurable transitions on UI elements. It supports customization of animation parameters such as duration, delay,
 /// easing, and value range, and can be triggered by different events (e.g., Loaded, MouseEnter, GotFocus). Derived
 /// classes should implement the AnimationBuild method to define the specific animation behavior. This class is not
@@ -162,7 +162,7 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     /// </summary>
     /// <remarks>This field is used to register and reference the SpeedRatio property with the Windows
     /// Presentation Foundation (WPF) property system. It is typically used when calling methods such as SetValue or
-    /// GetValue on instances of TransitionBase<T, TAnimation>.</remarks>
+    /// GetValue on instances of TransitionBase{T, TAnimation}.</remarks>
     public static readonly DependencyProperty SpeedRatioProperty = DependencyProperty.Register(nameof(SpeedRatio), typeof(double?), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(null));
 
     /// <summary>
@@ -519,9 +519,9 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     /// Handles changes to the Play attached property and triggers the associated animation when appropriate.
     /// </summary>
     /// <remarks>This method is intended to be used as a property changed callback for the Play attached
-    /// property. It initiates the animation only if the target object is a TransitionBase<T, TAnimation> with no easing
+    /// property. It initiates the animation only if the target object is a TransitionBase{T, TAnimation} with no easing
     /// function and the new value is true.</remarks>
-    /// <param name="d">The object on which the property value has changed. Expected to be a TransitionBase<T, TAnimation> instance.</param>
+    /// <param name="d">The object on which the property value has changed. Expected to be a TransitionBase{T, TAnimation} instance.</param>
     /// <param name="e">The event data that contains information about the property change.</param>
     private static void OnPlayChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -555,7 +555,7 @@ public abstract class TransitionBase<T, TAnimation> : Behavior<FrameworkElement>
     /// </summary>
     /// <remarks>This field is used to register and reference the CompleteCommand property in property system
     /// operations, such as data binding and styling. Typically used in custom controls that derive from
-    /// TransitionBase<T, TAnimation>.</remarks>
+    /// TransitionBase{T, TAnimation}.</remarks>
     public static readonly DependencyProperty CompleteCommandProperty = DependencyProperty.Register(nameof(CompleteCommand), typeof(ICommand), typeof(TransitionBase<T, TAnimation>), new PropertyMetadata(null));
 
     /// <summary>

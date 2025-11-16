@@ -57,8 +57,14 @@ public class InRangeConverter : TrueFalseConverter<object>
     }
 }
 
-
-  
+/// <summary>
+/// Provides a markup extension that supplies an <see cref="InRangeConverter"/> configured to determine whether a value
+/// falls within a specified numeric range. Enables declarative range checking in XAML data binding scenarios.
+/// </summary>
+/// <remarks>Use <see cref="InRangeConverterExtension"/> in XAML to create a value converter that evaluates
+/// whether a bound value is within the range defined by <see cref="MinValue"/> and <see cref="MaxValue"/>. The <see
+/// cref="IncludeEquals"/> property controls whether the range comparison includes the boundary values. This extension
+/// is typically used to simplify range validation logic in UI bindings.</remarks>
 public class InRangeConverterExtension : TrueFalseConverterExtension<InRangeConverter, object>
 {
     /// <summary>
@@ -77,6 +83,14 @@ public class InRangeConverterExtension : TrueFalseConverterExtension<InRangeConv
     /// </summary>
     public bool IncludeEquals { get; set; }
 
+    /// <summary>
+    /// Creates and returns a configured instance of the range converter for use in value conversion scenarios.
+    /// </summary>
+    /// <remarks>This method is typically called by XAML infrastructure to provide a value converter instance
+    /// with the appropriate configuration. The returned converter reflects the current property values of the
+    /// containing markup extension.</remarks>
+    /// <returns>A configured <see cref="InRangeConverter"/> instance with the current <see cref="MaxValue"/>, <see
+    /// cref="MinValue"/>, and <see cref="IncludeEquals"/> settings applied.</returns>
     protected override InRangeConverter ProvideValue()
     {
         var convert = base.ProvideValue();

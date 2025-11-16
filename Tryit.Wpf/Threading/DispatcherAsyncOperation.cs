@@ -1,3 +1,5 @@
+using System.Runtime.ExceptionServices;
+
 namespace Tryit.Wpf.Threading;
 
 /// <summary>
@@ -7,11 +9,11 @@ namespace Tryit.Wpf.Threading;
 /// </summary>
 /// <remarks>This class is designed for use with dispatcher-based asynchronous programming scenarios, such as in
 /// UI frameworks that require code to run on a specific thread. It allows asynchronous methods to return a value that
-/// can be awaited, ensuring that continuations after 'await' are scheduled on the original Dispatcher. Unlike Task<T>,
+/// can be awaited, ensuring that continuations after 'await' are scheduled on the original Dispatcher. Unlike Task{T},
 /// if the operation is not yet complete, accessing the result does not block the calling thread but instead returns the
 /// default value of <typeparamref name="T"/>. Exceptions that occur during the asynchronous operation are rethrown when
 /// retrieving the result. Use the static Create method to instantiate and control the completion of the
-/// operation.</remarks>
+/// operation. </remarks>
 /// <typeparam name="T">The type of the result produced by the asynchronous operation.</typeparam>
 public class DispatcherAsyncOperation<T> : DispatcherObject, IAwaitable<DispatcherAsyncOperation<T>, T>, IAwaiter<T>
 {
@@ -23,7 +25,7 @@ public class DispatcherAsyncOperation<T> : DispatcherObject, IAwaitable<Dispatch
     /// <summary>
     /// Gets an awaiter used to await the completion of this asynchronous operation.
     /// </summary>
-    /// <remarks>This method enables instances of DispatcherAsyncOperation<T> to be awaited using the await
+    /// <remarks>This method enables instances of DispatcherAsyncOperation{T} to be awaited using the await
     /// keyword in asynchronous methods.</remarks>
     /// <returns>An awaiter that can be used to await this operation.</returns>
     public DispatcherAsyncOperation<T> GetAwaiter()
@@ -123,17 +125,17 @@ public class DispatcherAsyncOperation<T> : DispatcherObject, IAwaitable<Dispatch
     private DispatcherPriority _priority = DispatcherPriority.Normal;
 
     /// <summary>
-    /// Creates a new DispatcherAsyncOperation<T> instance and provides a delegate for reporting the operation's result
+    /// Creates a new DispatcherAsyncOperation{T} instance and provides a delegate for reporting the operation's result
     /// or exception.
     /// </summary>
     /// <remarks>The returned delegate must be called exactly once to complete the operation. Calling the
     /// delegate with a non-null exception indicates the operation failed; otherwise, the result value is used. This
-    /// method is typically used to integrate custom asynchronous logic with the DispatcherAsyncOperation<T>
+    /// method is typically used to integrate custom asynchronous logic with the DispatcherAsyncOperation{T}
     /// pattern.</remarks>
     /// <param name="reportResult">When this method returns, contains a delegate that should be called to report the result or exception of the
     /// asynchronous operation. The first parameter is the result value; the second parameter is the exception, or null
     /// if the operation completed successfully.</param>
-    /// <returns>A new DispatcherAsyncOperation<T> instance that represents the asynchronous operation.</returns>
+    /// <returns>A new DispatcherAsyncOperation{T} instance that represents the asynchronous operation.</returns>
     public static DispatcherAsyncOperation<T> Create(out Action<T, Exception> reportResult)
     {
         DispatcherAsyncOperation<T> asyncOperation = new();

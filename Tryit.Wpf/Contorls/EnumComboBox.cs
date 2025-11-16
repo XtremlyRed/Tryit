@@ -300,12 +300,14 @@ public class EnumComboBox : ComboBox
         base.OnSelectionChanged(e);
     }
 
-    public static readonly RoutedEvent SelectionEnumValueChangedEvent = EventManager.RegisterRoutedEvent(
-        name: "SelectionEnumValueChanged",
-        routingStrategy: RoutingStrategy.Bubble,
-        handlerType: typeof(SelectionChangedEventHandler),
-        ownerType: typeof(EnumComboBox)
-    );
+    /// <summary>
+    /// Identifies the SelectionEnumValueChanged routed event, which occurs when the selected enumeration value changes
+    /// in the EnumComboBox.
+    /// </summary>
+    /// <remarks>Handlers for this event are invoked when the selection of the EnumComboBox changes to a
+    /// different enumeration value. This event uses the bubbling routing strategy, allowing it to be handled by parent
+    /// elements in the visual tree.</remarks>
+    public static readonly RoutedEvent SelectionEnumValueChangedEvent = EventManager.RegisterRoutedEvent(name: "SelectionEnumValueChanged", routingStrategy: RoutingStrategy.Bubble, handlerType: typeof(SelectionChangedEventHandler), ownerType: typeof(EnumComboBox));
 
     /// <summary>
     /// Occurs when the selected enum value changes and provides the newly selected enum.
@@ -319,20 +321,39 @@ public class EnumComboBox : ComboBox
 }
 
 /// <summary>
-/// Delegate for <see cref="EnumComboBox.SelectionEnumValueChanged"/> providing the newly selected enum value.
+/// Represents the method that handles a selection changed event in a user interface control.
 /// </summary>
-/// <param name="sender">Originating <see cref="EnumComboBox"/>.</param>
-/// <param name="enumValue">The newly selected enum value.</param>
+/// <param name="sender">The source of the event, typically the control where the selection changed.</param>
+/// <param name="changedRoutedEventArgs">An object that contains the event data for the selection change.</param>
 public delegate void SelectionChangedEventHandler(object? sender, SelectionChangedRoutedEventArgs changedRoutedEventArgs);
 
+/// <summary>
+/// Provides data for an event that occurs when a selection changes, containing the new and old selected values.
+/// </summary>
+/// <remarks>Use this class to access the previous and current selection values when handling selection change
+/// events in controls that use enumerated types. Both the new and old values are provided as Enum instances, allowing
+/// for flexible handling of different enumeration types.</remarks>
 public class SelectionChangedRoutedEventArgs : RoutedEventArgs
 {
+    /// <summary>
+    /// Initializes a new instance of the SelectionChangedRoutedEventArgs class with the specified new and old selection
+    /// values.
+    /// </summary>
+    /// <param name="newValue">The new value selected. Represents the current selection after the change.</param>
+    /// <param name="oldValue">The previous value that was selected before the change occurred.</param>
     public SelectionChangedRoutedEventArgs(Enum newValue, Enum oldValue)
     {
         NewValue = newValue;
         OldValue = oldValue;
     }
 
+    /// <summary>
+    /// Gets the new value assigned to the property or field represented by this change event.
+    /// </summary>
     public Enum NewValue { get; }
+
+    /// <summary>
+    /// Gets the previous value of the enumeration before the most recent change.
+    /// </summary>
     public Enum OldValue { get; }
 }

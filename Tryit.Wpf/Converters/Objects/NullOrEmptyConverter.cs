@@ -61,4 +61,11 @@ public class NullOrEmptyConverter : TrueFalseConverter<IEnumerable>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that returns a Boolean value indicating whether a given collection is null or contains
+/// no elements.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to enable conditional logic based on whether a collection is
+/// null or empty. It can be useful for controlling UI visibility or enabling/disabling controls depending on the
+/// presence of data.</remarks>
 public class NullOrEmptyConverterExtension : TrueFalseConverterExtension<NullOrEmptyConverter, IEnumerable> { }

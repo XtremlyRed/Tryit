@@ -33,4 +33,10 @@ public class NotNullConverter : TrueFalseConverter<object>
     }
 }
 
+/// <summary>
+/// Provides a markup extension that supplies a value converter which returns a Boolean indicating whether a value is
+/// not null.
+/// </summary>
+/// <remarks>This extension is typically used in XAML to bind to a Boolean property that reflects whether a bound
+/// value is not null. It is useful for enabling or disabling UI elements based on the presence of a value.</remarks>
 public class NotNullConverterExtension : TrueFalseConverterExtension<NotNullConverter, object> { }
