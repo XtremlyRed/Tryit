@@ -24,7 +24,6 @@ global using Panel = System.Windows.Controls.Panel;
 global using Point = System.Windows.Point;
 global using Size = System.Windows.Size;
 global using TextBox = System.Windows.Controls.TextBox;
-global using TriggerCollection = Microsoft.Xaml.Behaviors.TriggerCollection;
 global using UserContorl = System.Windows.Controls.UserControl;
 
 [assembly: XmlnsDefinition("http://schemas.microsoft.com/xaml/behaviors", "Tryit.Wpf")]

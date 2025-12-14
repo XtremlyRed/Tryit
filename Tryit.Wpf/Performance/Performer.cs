@@ -1,87 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Microsoft.Xaml.Behaviors;
+﻿using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Tryit.Wpf;
 
-/// <summary>
-/// Provides static methods for attaching and retrieving collections of transition behaviors to dependency objects at
-/// runtime.
-/// </summary>
-/// <remarks>The Interaction class enables the dynamic association of BehaviorCollection instances with dependency
-/// objects, allowing behaviors to be added, removed, or managed without modifying the object's code. This is commonly
-/// used in UI frameworks that support behaviors and transitions, such as WPF or similar XAML-based technologies. All
-/// members are static and thread safety depends on the usage of the attached objects and collections.</remarks>
-public static class Interaction
+public abstract class Performer : DependencyObject
 {
-    /// <summary>
-    /// Identifies the ShadowTransitions attached dependency property, which is used to associate a collection of
-    /// behaviors with a dependency object.
-    /// </summary>
-    /// <remarks>This field is typically used when registering or accessing the ShadowTransitions attached
-    /// property on elements that support dependency properties. It enables the storage and retrieval of a
-    /// BehaviorCollection for a given object, allowing behaviors to be dynamically attached at runtime.</remarks>
-    private static readonly DependencyProperty TransitionsProperty = DependencyProperty.RegisterAttached("ShadowTransitions", typeof(BehaviorCollection), typeof(Interaction), new FrameworkPropertyMetadata(new PropertyChangedCallback(Interaction.OnTransitionsChanged)));
-
-    /// <summary>
-    /// Gets the collection of transition behaviors associated with the specified dependency object. If no collection
-    /// exists, a new one is created and attached.
-    /// </summary>
-    /// <remarks>This method ensures that each dependency object has a unique BehaviorCollection instance for
-    /// managing its transitions. Subsequent calls with the same object will return the same collection
-    /// instance.</remarks>
-    /// <param name="dependencyObject">The object from which to retrieve or to which to attach the transition behaviors. Cannot be null.</param>
-    /// <returns>A BehaviorCollection containing the transition behaviors associated with the specified dependency object. If no
-    /// behaviors are associated, a new, empty collection is returned and attached.</returns>
-    public static BehaviorCollection GetTransitions(DependencyObject dependencyObject)
+    public Duration Duration
     {
-        BehaviorCollection behaviorCollection = (BehaviorCollection)dependencyObject.GetValue(Interaction.TransitionsProperty);
-        if (behaviorCollection == null)
-        {
-            behaviorCollection = (BehaviorCollection)Activator.CreateInstance(typeof(BehaviorCollection), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, null, CultureInfo.CurrentCulture)!;
-            dependencyObject.SetValue(Interaction.TransitionsProperty, behaviorCollection);
-        }
-        return behaviorCollection;
+        get => (Duration)GetValue(DurationProperty);
+        set => SetValue(DurationProperty, value);
     }
 
-    /// <summary>
-    /// Handles changes to the collection of transitions attached to a dependency object.
-    /// </summary>
-    /// <remarks>This method is typically used as a property changed callback for an attached property
-    /// representing a collection of transitions or behaviors. It ensures that the old collection is detached from the
-    /// dependency object and the new collection is attached, maintaining the correct association between the object and
-    /// its behaviors.</remarks>
-    /// <param name="dependencyObject">The object to which the transitions are attached or detached.</param>
-    /// <param name="args">The event data that contains information about the change to the transitions collection.</param>
-    private static void OnTransitionsChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs args)
+    public static readonly DependencyProperty DurationProperty =
+        DependencyProperty.Register(nameof(Duration), typeof(Duration), typeof(Performer), new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(500))));
+
+    public TimeSpan Delay
     {
-        BehaviorCollection oldCollection = (BehaviorCollection)args.OldValue;
-        BehaviorCollection newCollection = (BehaviorCollection)args.NewValue;
-
-        if (oldCollection == newCollection)
-        {
-            return;
-        }
-
-        if (oldCollection != null && ((IAttachedObject)oldCollection).AssociatedObject != null)
-        {
-            oldCollection.Detach();
-        }
-
-        if (newCollection != null && dependencyObject != null)
-        {
-            if (((IAttachedObject)newCollection).AssociatedObject is null)
-            {
-                newCollection.Attach(dependencyObject);
-            }
-        }
+        get => (TimeSpan)GetValue(DelayProperty);
+        set => SetValue(DelayProperty, value);
     }
+
+    public static readonly DependencyProperty DelayProperty =
+        DependencyProperty.Register(nameof(Delay), typeof(TimeSpan), typeof(Performer), new PropertyMetadata(TimeSpan.FromMilliseconds(0)));
+
+    public EasingFunction EasingFunction
+    {
+        get => (EasingFunction)GetValue(EasingFunctionProperty);
+        set => SetValue(EasingFunctionProperty, value);
+    }
+
+    public static readonly DependencyProperty EasingFunctionProperty =
+        DependencyProperty.Register(nameof(EasingFunction), typeof(EasingFunction), typeof(Performer), new PropertyMetadata(EasingFunction.Circle));
+
+    public EasingMode EasingMode
+    {
+        get => (EasingMode)GetValue(EasingModeProperty);
+        set => SetValue(EasingModeProperty, value);
+    }
+
+    public static readonly DependencyProperty EasingModeProperty =
+         DependencyProperty.Register(nameof(EasingMode), typeof(EasingMode), typeof(Performer), new PropertyMetadata(EasingMode.EaseIn));
+
+    public double? SpeedRatio
+    {
+        get => (double?)GetValue(SpeedRatioProperty);
+        set => SetValue(SpeedRatioProperty, value);
+    }
+
+    public static readonly DependencyProperty SpeedRatioProperty =
+        DependencyProperty.Register(nameof(SpeedRatio), typeof(double?), typeof(Performer), new PropertyMetadata(null));
+
+    public double? DecelerationRatio
+    {
+        get => (double?)GetValue(DecelerationRatioProperty);
+        set => SetValue(DecelerationRatioProperty, value);
+    }
+
+    public static readonly DependencyProperty DecelerationRatioProperty =
+        DependencyProperty.Register(nameof(DecelerationRatio), typeof(double?), typeof(Performer), new PropertyMetadata(null));
+
+    internal abstract AnimationTimeline CreateAnimation(DependencyObject dependencyObject);
+
+    internal static T Initialize<T, TData, TTransform>(DependencyObject dependencyObject, string animationPath, TData? data, Action<T, TData?> setCallback, InitializeAnimationPathEventHandler<TTransform>? initializeAnimationPathEventHandler = null, Action<DependencyObject>? callback = null)
+        where T : Animatable, new()
+        where TTransform : Transform, new()
+    {
+        T animation = new();
+
+        setCallback?.Invoke(animation, data);
+        callback?.Invoke(dependencyObject);
+
+        if (initializeAnimationPathEventHandler is not null)
+        {
+            animationPath = initializeAnimationPathEventHandler.Invoke(dependencyObject, animationPath);
+        }
+
+        Storyboard.SetTargetProperty(animation, new PropertyPath(animationPath));
+        Storyboard.SetTarget(animation, dependencyObject);
+
+        return animation;
+    }
+
+    internal delegate string InitializeAnimationPathEventHandler<TTransform>(DependencyObject dependencyObject, string animationPath) where TTransform : Transform, new();
 }
 
 /// <summary>

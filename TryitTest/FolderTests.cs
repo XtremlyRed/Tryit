@@ -1,10 +1,7 @@
-﻿namespace TryitTest
-{
-    using System;
-    using System.IO;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Tryit;
+﻿using Tryit;
 
+namespace TryitTest
+{
     namespace TryitTest.Utils
     {
         [TestClass]
@@ -37,7 +34,7 @@
                 var path = @"C:\Test";
 
                 // Act
-                Folder folder1 = new Folder(path);
+                Folder folder1 = new(path);
                 Folder folder2 = path;
 
                 // Assert
@@ -86,7 +83,7 @@
                 var folder = new Folder(@"C:\Temp");
 
                 // Act
-                folder.Combine(null);
+                _ = folder.Combine(null!);
             }
 
             [TestMethod]
@@ -97,7 +94,7 @@
                 var folder = new Folder(@"C:\Temp");
 
                 // Act
-                folder.Combine();
+                _ = folder.Combine();
             }
 
             [TestMethod]
@@ -105,7 +102,7 @@
             public void CombinePaths_NullPaths_ThrowsArgumentNullException()
             {
                 // Act
-                Folder.CombinePaths(null);
+                _ = Folder.CombinePaths(null!);
             }
 
             [TestMethod]
@@ -113,7 +110,7 @@
             public void CombinePaths_EmptyPaths_ThrowsArgumentNullException()
             {
                 // Act
-                Folder.CombinePaths();
+                _ = Folder.CombinePaths();
             }
 
             [TestMethod]
@@ -155,7 +152,7 @@
                 Assert.IsFalse(Directory.Exists(_tempTestFolder), "Pre-condition: Directory should not exist.");
 
                 // Act
-                folder.TryCreateFolder();
+                _ = folder.TryCreateFolder();
 
                 // Assert
                 Assert.IsTrue(Directory.Exists(_tempTestFolder), "Directory should have been created.");
