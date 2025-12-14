@@ -4,63 +4,137 @@ using System.Windows.Media.Animation;
 
 namespace Tryit.Wpf;
 
+/// <summary>
+/// Provides a base class for objects that define animation or timing behavior using dependency properties for duration,
+/// delay, easing, speed, and deceleration settings.
+/// </summary>
+/// <remarks>The Performer class is designed for use in animation scenarios within Windows Presentation Foundation
+/// (WPF) applications. It exposes a set of dependency properties that allow customization of animation timing and
+/// interpolation characteristics, such as duration, delay, easing function, speed ratio, and deceleration ratio. These
+/// properties enable flexible control over how animations are performed and can be data bound, styled, or animated
+/// themselves. Derived classes implement specific animation logic by extending this abstract base class.</remarks>
 public abstract class Performer : DependencyObject
 {
+    /// <summary>
+    /// Gets or sets the duration associated with the current instance.
+    /// </summary>
     public Duration Duration
     {
         get => (Duration)GetValue(DurationProperty);
         set => SetValue(DurationProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the Duration dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register and reference the Duration property with the Windows
+    /// Presentation Foundation (WPF) property system. Dependency properties enable styling, data binding, animation,
+    /// and default value support in WPF controls.</remarks>
     public static readonly DependencyProperty DurationProperty =
         DependencyProperty.Register(nameof(Duration), typeof(Duration), typeof(Performer), new PropertyMetadata(new Duration(TimeSpan.FromMilliseconds(500))));
 
-    public TimeSpan Delay
+    /// <summary>
+    /// Gets or sets the amount of time to wait before performing the associated action.
+    /// </summary>
+    /// <remarks>Set this property to specify a delay interval. The behavior after changing this value may
+    /// depend on the context in which the property is used. Ensure that the value is non-negative to avoid unexpected
+    /// results.</remarks>
+    public TimeSpan? Delay
     {
-        get => (TimeSpan)GetValue(DelayProperty);
+        get => (TimeSpan?)GetValue(DelayProperty);
         set => SetValue(DelayProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the Delay dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register and reference the Delay property with the Windows Presentation
+    /// Foundation (WPF) property system. It is typically used when calling methods such as SetValue or GetValue on
+    /// instances of the Performer class.</remarks>
     public static readonly DependencyProperty DelayProperty =
-        DependencyProperty.Register(nameof(Delay), typeof(TimeSpan), typeof(Performer), new PropertyMetadata(TimeSpan.FromMilliseconds(0)));
+        DependencyProperty.Register(nameof(Delay), typeof(TimeSpan?), typeof(Performer), new PropertyMetadata(null));
 
-    public EasingFunction EasingFunction
-    {
-        get => (EasingFunction)GetValue(EasingFunctionProperty);
-        set => SetValue(EasingFunctionProperty, value);
-    }
-
-    public static readonly DependencyProperty EasingFunctionProperty =
-        DependencyProperty.Register(nameof(EasingFunction), typeof(EasingFunction), typeof(Performer), new PropertyMetadata(EasingFunction.Circle));
-
-    public EasingMode EasingMode
-    {
-        get => (EasingMode)GetValue(EasingModeProperty);
-        set => SetValue(EasingModeProperty, value);
-    }
-
-    public static readonly DependencyProperty EasingModeProperty =
-         DependencyProperty.Register(nameof(EasingMode), typeof(EasingMode), typeof(Performer), new PropertyMetadata(EasingMode.EaseIn));
-
+    /// <summary>
+    /// Gets or sets the ratio that controls the speed of the animation relative to its normal rate.
+    /// </summary>
+    /// <remarks>A value of 1.0 indicates the default playback speed. Values greater than 1.0 increase the
+    /// speed, while values between 0.0 and 1.0 decrease it. If the value is null, the default speed is used.</remarks>
     public double? SpeedRatio
     {
         get => (double?)GetValue(SpeedRatioProperty);
         set => SetValue(SpeedRatioProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the SpeedRatio dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register and reference the SpeedRatio property with the Windows
+    /// Presentation Foundation (WPF) property system. It is typically used when calling methods such as SetValue or
+    /// GetValue on instances of the Performer class.</remarks>
     public static readonly DependencyProperty SpeedRatioProperty =
         DependencyProperty.Register(nameof(SpeedRatio), typeof(double?), typeof(Performer), new PropertyMetadata(null));
 
+    /// <summary>
+    /// Gets or sets the ratio that specifies how much the animation slows down as it approaches its final value.
+    /// </summary>
+    /// <remarks>A higher deceleration ratio causes the animation to slow down more noticeably near the end of
+    /// its duration. The value should be between 0.0 and 1.0, where 0.0 indicates no deceleration and 1.0 indicates the
+    /// animation spends all of its time decelerating. If null, a default deceleration ratio may be used.</remarks>
     public double? DecelerationRatio
     {
         get => (double?)GetValue(DecelerationRatioProperty);
         set => SetValue(DecelerationRatioProperty, value);
     }
-
+    /// <summary>
+    /// Identifies the DecelerationRatio dependency property.
+    /// </summary>
+    /// <remarks>This field is used to register and
+    /// reference the DecelerationRatio property with the Windows Presentation Foundation
+    /// (WPF) property system. It is typically used when calling methods such as SetValue,
+    /// GetValue, or for property metadata operations.</remarks>
     public static readonly DependencyProperty DecelerationRatioProperty =
         DependencyProperty.Register(nameof(DecelerationRatio), typeof(double?), typeof(Performer), new PropertyMetadata(null));
 
-    internal abstract AnimationTimeline CreateAnimation(DependencyObject dependencyObject);
+    /// <summary>
+    /// Builds and configures an animation timeline for the specified dependency object using the current animation
+    /// settings.
+    /// </summary>
+    /// <param name="dependencyObject">The dependency object to which the animation will be applied. This object is used to create and configure the
+    /// animation timeline.</param>
+    /// <returns>An AnimationTimeline instance configured with the specified duration, delay, speed ratio, and deceleration
+    /// ratio, ready to be applied to the given dependency object.</returns>
+    internal AnimationTimeline AnimationBuild(DependencyObject dependencyObject)
+    {
+        AnimationTimeline animationTimeline = CreateAnimation(dependencyObject);
+
+        if (DecelerationRatio.HasValue)
+        {
+            animationTimeline.DecelerationRatio = DecelerationRatio.Value;
+        }
+
+        if (Delay.HasValue)
+        {
+            animationTimeline.BeginTime = Delay.Value;
+        }
+
+        if (SpeedRatio.HasValue)
+        {
+            animationTimeline.SpeedRatio = SpeedRatio.Value;
+        }
+
+        animationTimeline.Duration = Duration;
+
+        return animationTimeline;
+    }
+
+    /// <summary>
+    /// Creates an instance of an AnimationTimeline that defines the animation for the specified DependencyObject.
+    /// </summary>
+    /// <remarks>Override this method in a derived class to provide a custom animation for the given
+    /// DependencyObject. The returned AnimationTimeline determines how the property value changes over time.</remarks>
+    /// <param name="dependencyObject">The object to which the animation will be applied. This parameter cannot be null.</param>
+    /// <returns>An AnimationTimeline that describes the animation to apply to the specified DependencyObject.</returns>
+    protected abstract AnimationTimeline CreateAnimation(DependencyObject dependencyObject);
 
     internal static T Initialize<T, TData, TTransform>(DependencyObject dependencyObject, string animationPath, TData? data, Action<T, TData?> setCallback, InitializeAnimationPathEventHandler<TTransform>? initializeAnimationPathEventHandler = null, Action<DependencyObject>? callback = null)
         where T : Animatable, new()
@@ -150,7 +224,7 @@ public enum EasingFunction
     /// <summary>
     ///
     /// </summary>
-    None,
+    Linear,
 
     /// <summary>
     /// Gets or sets the back navigation command or state for the control.

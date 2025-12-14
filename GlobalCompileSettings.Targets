@@ -11,7 +11,7 @@
     <None Include="$(SolutionDir)\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
   <PropertyGroup>
-    <PackageVersion>2.2</PackageVersion>
+    <PackageVersion>2.2.1</PackageVersion>
     <AssemblyVersion>2.0</AssemblyVersion>
     <LangVersion>14.0</LangVersion>
     <PackageProjectUrl>https://github.com/xtremlyred/tryit</PackageProjectUrl>
