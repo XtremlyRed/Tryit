@@ -14,10 +14,10 @@ Tryit.CSharp is organized into two main packages:
 ## Supported Frameworks
 
 | Framework      | Version          |
-|----------------|------------------|
-| .NET Framework  | 4.5.1, 4.7.2      |
+|----------------|------------------| 
 | .NET Core      | 3.1              |
-| .NET           | 8.0, 10.0      | 
+| .NET           | 8.0, 10.0      |
+| .NET Standard  | 2.0              |
 
 ## Installation
 
