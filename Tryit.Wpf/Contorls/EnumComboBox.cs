@@ -6,6 +6,8 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 
+#pragma warning disable CS9113
+
 namespace Tryit.Wpf;
 
 /// <summary>
@@ -36,11 +38,6 @@ public class EnumComboBox : ComboBox
     private static readonly IDictionary<Type, EnumDisplay[]> EnumInfoMaps = new ConcurrentDictionary<Type, EnumDisplay[]>();
 
     /// <summary>
-    /// Backing collection bound to <see cref="ItemsControl.ItemsSource"/> (populated when <see cref="EnumType"/> changes).
-    /// </summary>
-    private readonly ObservableCollection<EnumDisplay> enumInfos = [];
-
-    /// <summary>
     /// Static constructor: overrides default style key so the control uses the base ComboBox style unless retemplated.
     /// </summary>
     static EnumComboBox()
@@ -68,58 +65,9 @@ public class EnumComboBox : ComboBox
     /// </summary>
     public EnumComboBox()
     {
-        ItemsSource = enumInfos;
+        ItemsSource = new ObservableCollection<EnumDisplay>();
         DisplayMemberPath = nameof(EnumDisplay.DisplayName);
     }
-
-    /// <summary>
-    /// Identifies the <see cref="EnumType"/> dependency property.
-    /// When changed:
-    ///  - Clears previous items.
-    ///  - Reflects enum members (with caching).
-    ///  - Populates internal collection.
-    ///  - Applies <see cref="IgnoreValues"/>.
-    ///  - Tries to select current <see cref="EnumValue"/>.
-    /// </summary>
-    public static readonly DependencyProperty EnumTypeProperty = DependencyProperty.Register(
-        nameof(EnumType),
-        typeof(Type),
-        typeof(EnumComboBox),
-        new FrameworkPropertyMetadata(
-            null,
-            (s, e) =>
-            {
-                if (s is not EnumComboBox @enum)
-                    return;
-
-                @enum.enumInfos.Clear();
-
-                if (e.NewValue is not Type type || type.IsEnum == false)
-                    return;
-
-                if (EnumInfoMaps.TryGetValue(type, out EnumDisplay[]? infos) == false)
-                {
-                    EnumInfoMaps[type] = infos = type.GetFields()
-                        .Where(i => i.IsStatic)
-                        .Select(i => new
-                        {
-                            Field = i,
-                            Value = i.GetValue(null)!,
-                            i.Name,
-                            DisplayName = i.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? i.Name,
-                        })
-                        .Select(i => new EnumDisplay(i.Value, i.Value.GetHashCode(), i.DisplayName))
-                        .ToArray();
-                }
-
-                for (int i = 0; i < infos.Length; i++)
-                    @enum.enumInfos.Add(infos[i]);
-
-                @enum.TryRemoveIgnores(@enum.IgnoreValues);
-                @enum.TrySetCurrent(@enum.EnumValue);
-            }
-        )
-    );
 
     /// <summary>
     /// Gets or sets the enum <see cref="Type"/> whose members should populate the ComboBox.
@@ -131,6 +79,50 @@ public class EnumComboBox : ComboBox
         set => SetValue(EnumTypeProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="EnumType"/> dependency property.
+    /// When changed:
+    ///  - Clears previous items.
+    ///  - Reflects enum members (with caching).
+    ///  - Populates internal collection.
+    ///  - Applies <see cref="IgnoreValues"/>.
+    ///  - Tries to select current <see cref="EnumValue"/>.
+    /// </summary>
+    public static readonly DependencyProperty EnumTypeProperty = DependencyProperty.Register(nameof(EnumType), typeof(Type), typeof(EnumComboBox), new FrameworkPropertyMetadata(null, OnEnumTypeChanged));
+
+    private static void OnEnumTypeChanged(DependencyObject s, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        if (s is not EnumComboBox @enum || @enum.ItemsSource is not IList<EnumDisplay> enumInfos)
+        {
+            return;
+        }
+
+        if (e.NewValue is not Type type || type.IsEnum == false)
+        {
+            return;
+        }
+
+        enumInfos.Clear();
+
+        if (EnumInfoMaps.TryGetValue(type, out EnumDisplay[]? infos) == false)
+        {
+            EnumInfoMaps[type] = infos = type.GetFields()
+                .Where(i => i.IsStatic)
+                .Select(i => new { Value = i.GetValue(null)!, DisplayName = i.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName ?? i.GetCustomAttribute<DescriptionAttribute>()?.Description ?? i.Name })
+                .Select(i => new EnumDisplay(i.Value, i.Value.GetHashCode(), i.DisplayName))
+                .ToArray();
+        }
+
+        for (int i = 0; i < infos.Length; i++)
+        {
+            enumInfos.Add(infos[i]);
+        }
+
+        @enum.TryRemoveIgnores(@enum.IgnoreValues);
+
+        @enum.TrySetCurrent(@enum.EnumValue);
+    }
+
     #region Internal List Operations
 
     /// <summary>
@@ -140,13 +132,17 @@ public class EnumComboBox : ComboBox
     /// <param name="ignores">Collection of enum values to ignore.</param>
     private void TryRemoveIgnores(IEnumerable? ignores)
     {
-        if (ignores is null)
+        if (ignores is null || ItemsSource is not IList<EnumDisplay> enumInfos)
+        {
             return;
+        }
 
         foreach (object? ignore in ignores)
         {
             if (ignore is null)
+            {
                 continue;
+            }
 
             int hashCode = ignore.GetHashCode();
 
@@ -164,7 +160,7 @@ public class EnumComboBox : ComboBox
     /// <param name="enumValue">Enum value to select.</param>
     private void TrySetCurrent(object enumValue)
     {
-        if (enumValue is null)
+        if (enumValue is null || ItemsSource is not IList<EnumDisplay> enumInfos)
         {
             SelectedIndex = -1;
             return;
@@ -188,20 +184,7 @@ public class EnumComboBox : ComboBox
     /// This property binds two-way by default and reflects the currently selected enum value (boxed).
     /// Updating this property programmatically attempts to update the selection.
     /// </summary>
-    public static readonly DependencyProperty EnumValueProperty = DependencyProperty.Register(
-        nameof(EnumValue),
-        typeof(object),
-        typeof(EnumComboBox),
-        new FrameworkPropertyMetadata(
-            null,
-            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-            (s, e) =>
-            {
-                if (s is EnumComboBox @enum)
-                    @enum.TrySetCurrent(e.NewValue);
-            }
-        )
-    );
+    public static readonly DependencyProperty EnumValueProperty = DependencyProperty.Register(nameof(EnumValue), typeof(object), typeof(EnumComboBox), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnEnumValueChanged));
 
     /// <summary>
     /// Gets or sets the currently selected enum value (boxed).
@@ -213,24 +196,19 @@ public class EnumComboBox : ComboBox
         set => SetValue(EnumValueProperty, value);
     }
 
+    private static void OnEnumValueChanged(DependencyObject s, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        if (s is EnumComboBox @enum)
+        {
+            @enum.TrySetCurrent(e.NewValue);
+        }
+    }
+
     /// <summary>
     /// Identifies the <see cref="EmptyValue"/> dependency property.
     /// This can be used in a custom template to display placeholder text when no selection exists.
     /// </summary>
-    public static readonly DependencyProperty EmptyValueProperty = DependencyProperty.Register(
-        nameof(EmptyValue),
-        typeof(string),
-        typeof(EnumComboBox),
-        new FrameworkPropertyMetadata(
-            "None",
-            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-            (s, e) =>
-            {
-                if (s is EnumComboBox @enum)
-                    @enum.TrySetCurrent(@enum.EnumValue);
-            }
-        )
-    );
+    public static readonly DependencyProperty EmptyValueProperty = DependencyProperty.Register(nameof(EmptyValue), typeof(string), typeof(EnumComboBox), new FrameworkPropertyMetadata("None", FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnEmptyValueChanged));
 
     /// <summary>
     /// Gets or sets the placeholder text (not directly used by default template; provided for customization).
@@ -241,27 +219,19 @@ public class EnumComboBox : ComboBox
         set => SetValue(EmptyValueProperty, value);
     }
 
+    private static void OnEmptyValueChanged(DependencyObject s, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        if (s is EnumComboBox @enum)
+        {
+            @enum.TrySetCurrent(@enum.EnumValue);
+        }
+    }
+
     /// <summary>
     /// Identifies the <see cref="IgnoreValues"/> dependency property.
     /// When changed: removes the supplied values from the internal list (if present) and re-applies current selection.
     /// </summary>
-    public static readonly DependencyProperty IgnoreValuesProperty = DependencyProperty.Register(
-        nameof(IgnoreValues),
-        typeof(IEnumerable),
-        typeof(EnumComboBox),
-        new FrameworkPropertyMetadata(
-            null,
-            FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-            (s, e) =>
-            {
-                if (s is EnumComboBox @enum)
-                {
-                    @enum.TryRemoveIgnores(e.NewValue as IEnumerable);
-                    @enum.TrySetCurrent(@enum.EnumValue);
-                }
-            }
-        )
-    );
+    public static readonly DependencyProperty IgnoreValuesProperty = DependencyProperty.Register(nameof(IgnoreValues), typeof(IEnumerable), typeof(EnumComboBox), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnIgnoreValuesChanged));
 
     /// <summary>
     /// Gets or sets a collection of enum values that should be excluded from the ComboBox items.
@@ -272,6 +242,15 @@ public class EnumComboBox : ComboBox
         set => SetValue(IgnoreValuesProperty, value);
     }
 
+    private static void OnIgnoreValuesChanged(DependencyObject s, System.Windows.DependencyPropertyChangedEventArgs e)
+    {
+        if (s is EnumComboBox @enum)
+        {
+            @enum.TryRemoveIgnores(e.NewValue as IEnumerable);
+            @enum.TrySetCurrent(@enum.EnumValue);
+        }
+    }
+
     /// <summary>
     /// Overrides selection change logic to:
     ///  - Update <see cref="EnumValue"/> with the newly selected enum value (or null).
@@ -280,6 +259,11 @@ public class EnumComboBox : ComboBox
     /// <param name="e">Selection change event args.</param>
     protected override void OnSelectionChanged(SelectionChangedEventArgs e)
     {
+        if (ItemsSource is not IList<EnumDisplay> enumInfos)
+        {
+            return;
+        }
+
         object? updateValue = null;
 
         if (SelectedIndex >= 0 && SelectedIndex < enumInfos.Count)
@@ -333,27 +317,4 @@ public delegate void SelectionChangedEventHandler(object? sender, SelectionChang
 /// <remarks>Use this class to access the previous and current selection values when handling selection change
 /// events in controls that use enumerated types. Both the new and old values are provided as Enum instances, allowing
 /// for flexible handling of different enumeration types.</remarks>
-public class SelectionChangedRoutedEventArgs : RoutedEventArgs
-{
-    /// <summary>
-    /// Initializes a new instance of the SelectionChangedRoutedEventArgs class with the specified new and old selection
-    /// values.
-    /// </summary>
-    /// <param name="newValue">The new value selected. Represents the current selection after the change.</param>
-    /// <param name="oldValue">The previous value that was selected before the change occurred.</param>
-    public SelectionChangedRoutedEventArgs(Enum newValue, Enum oldValue)
-    {
-        NewValue = newValue;
-        OldValue = oldValue;
-    }
-
-    /// <summary>
-    /// Gets the new value assigned to the property or field represented by this change event.
-    /// </summary>
-    public Enum NewValue { get; }
-
-    /// <summary>
-    /// Gets the previous value of the enumeration before the most recent change.
-    /// </summary>
-    public Enum OldValue { get; }
-}
+public class SelectionChangedRoutedEventArgs(Enum NewValue, Enum OldValue) : RoutedEventArgs { }

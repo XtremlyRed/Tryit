@@ -136,6 +136,26 @@ public abstract class Performer : DependencyObject
     /// <returns>An AnimationTimeline that describes the animation to apply to the specified DependencyObject.</returns>
     protected abstract AnimationTimeline CreateAnimation(DependencyObject dependencyObject);
 
+    /// <summary>
+    /// Initializes a new animation of the specified type, configures it with the provided data and callbacks, and
+    /// associates it with the given dependency object and animation path.
+    /// </summary>
+    /// <remarks>This method is intended for internal use to streamline the setup of animations with custom
+    /// configuration and event handling. The returned animation is not started automatically; callers are responsible
+    /// for adding it to a storyboard or starting it as needed.</remarks>
+    /// <typeparam name="T">The type of animation to create. Must derive from Animatable and have a parameterless constructor.</typeparam>
+    /// <typeparam name="TData">The type of data used to configure the animation.</typeparam>
+    /// <typeparam name="TTransform">The type of transform used for the animation path. Must derive from Transform and have a parameterless
+    /// constructor.</typeparam>
+    /// <param name="dependencyObject">The dependency object to which the animation will be applied. Cannot be null.</param>
+    /// <param name="animationPath">The property path that specifies the target property for the animation. Cannot be null or empty.</param>
+    /// <param name="data">The data used to configure the animation. May be null if the animation does not require additional data.</param>
+    /// <param name="setCallback">A callback invoked to configure the animation with the provided data. Cannot be null.</param>
+    /// <param name="initializeAnimationPathEventHandler">An optional event handler that can modify or initialize the animation path before it is applied. If null, the
+    /// original animation path is used.</param>
+    /// <param name="callback">An optional callback invoked with the dependency object after the animation is configured.</param>
+    /// <returns>A new instance of the animation of type T, configured and associated with the specified dependency object and
+    /// property path.</returns>
     internal static T Initialize<T, TData, TTransform>(DependencyObject dependencyObject, string animationPath, TData? data, Action<T, TData?> setCallback, InitializeAnimationPathEventHandler<TTransform>? initializeAnimationPathEventHandler = null, Action<DependencyObject>? callback = null)
         where T : Animatable, new()
         where TTransform : Transform, new()
@@ -156,6 +176,15 @@ public abstract class Performer : DependencyObject
         return animation;
     }
 
+    /// <summary>
+    /// Represents a method that initializes an animation path for a specified dependency object and returns the
+    /// resolved animation path string.
+    /// </summary>
+    /// <typeparam name="TTransform">The type of transform to apply. Must be a subclass of Transform with a parameterless constructor.</typeparam>
+    /// <param name="dependencyObject">The dependency object for which the animation path is being initialized. Cannot be null.</param>
+    /// <param name="animationPath">The animation path to initialize. This is typically a property path or identifier used for animation targeting.</param>
+    /// <returns>A string representing the initialized or resolved animation path. The returned value may be used to configure or
+    /// start an animation.</returns>
     internal delegate string InitializeAnimationPathEventHandler<TTransform>(DependencyObject dependencyObject, string animationPath) where TTransform : Transform, new();
 }
 

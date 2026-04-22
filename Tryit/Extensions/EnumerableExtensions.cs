@@ -1,11 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace System.Linq;
 
@@ -77,26 +73,13 @@ public static partial class EnumerableExtensions
     /// <returns>True if the collection is null or contains no elements; otherwise, false.</returns>
     public static bool IsNullOrEmpty<TSource>(this IEnumerable<TSource>? source)
     {
-        if (source is null)
-        {
-            return true;
-        }
-        if (source is IList<TSource> array)
-        {
-            return array.Count == 0;
-        }
-        else if (source is IReadOnlyCollection<TSource> @readonly)
-        {
-            return @readonly.Count == 0;
-        }
-        else if (source is ICollection<TSource> collection)
-        {
-            return collection.Count == 0;
-        }
-        else
-        {
-            return source is ICollection collection2 ? collection2.Count == 0 : source.Any() == false;
-        }
+        return source is null || (source is IList<TSource> array
+            ? array.Count == 0
+            : source is IReadOnlyCollection<TSource> @readonly
+                ? @readonly.Count == 0
+                : source is ICollection<TSource> collection
+                            ? collection.Count == 0
+                            : source is ICollection collection2 ? collection2.Count == 0 : source.Any() == false);
     }
 
     /// <summary>
@@ -107,26 +90,13 @@ public static partial class EnumerableExtensions
     /// <returns>True if the collection is not null and contains at least one element; otherwise, false.</returns>
     public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource>? source)
     {
-        if (source is null)
-        {
-            return false;
-        }
-        if (source is IList<TSource> array)
-        {
-            return array.Count != 0;
-        }
-        else if (source is IReadOnlyCollection<TSource> @readonly)
-        {
-            return @readonly.Count != 0;
-        }
-        else if (source is ICollection<TSource> collection)
-        {
-            return collection.Count != 0;
-        }
-        else
-        {
-            return source is ICollection collection2 ? collection2.Count != 0 : source.Any();
-        }
+        return source is not null && (source is IList<TSource> array
+            ? array.Count != 0
+            : source is IReadOnlyCollection<TSource> @readonly
+                ? @readonly.Count != 0
+                : source is ICollection<TSource> collection
+                            ? collection.Count != 0
+                            : source is ICollection collection2 ? collection2.Count != 0 : source.Any());
     }
 
     /// <summary>
@@ -327,11 +297,11 @@ public static partial class EnumerableExtensions
     /// <param name="action">The operation to perform on each element of the collection.</param>
     /// <returns>The original collection after applying the action to each element.</returns>
     [DebuggerNonUserCode]
-    public static IEnumerable<Target> ForEach<Target>(this IEnumerable<Target> source, Action<Target> action)
+    public static void ForEach<Target>(this IEnumerable<Target> source, Action<Target> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList<Target> list)
@@ -355,8 +325,6 @@ public static partial class EnumerableExtensions
                 action(item);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -366,11 +334,11 @@ public static partial class EnumerableExtensions
     /// <param name="source">The collection of elements to iterate over and apply the action to.</param>
     /// <param name="action">The operation to perform on each element and its index during iteration.</param>
     [DebuggerNonUserCode]
-    public static IEnumerable<Target> ForEach<Target>(this IEnumerable<Target> source, Action<Target, int> action)
+    public static void ForEach<Target>(this IEnumerable<Target> source, Action<Target, int> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList<Target> list)
@@ -396,8 +364,6 @@ public static partial class EnumerableExtensions
                 action(item, index);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -408,11 +374,11 @@ public static partial class EnumerableExtensions
     /// <param name="action">An asynchronous function that is applied to each element in the collection.</param>
     /// <returns>The original collection after all actions have been executed.</returns>
     [DebuggerNonUserCode]
-    public static async Task<IEnumerable<Target>> ForEachAsync<Target>(this IEnumerable<Target> source, Func<Target, Task> action)
+    public static async Task ForEachAsync<Target>(this IEnumerable<Target> source, Func<Target, Task> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList<Target> list)
@@ -436,8 +402,6 @@ public static partial class EnumerableExtensions
                 await action(item);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -448,11 +412,11 @@ public static partial class EnumerableExtensions
     /// <param name="action">An asynchronous function that takes an element and its index to perform an operation.</param>
     /// <returns>The original collection after all actions have been executed.</returns>
     [DebuggerNonUserCode]
-    public static async Task<IEnumerable<Target>> ForEachAsync<Target>(this IEnumerable<Target> source, Func<Target, int, Task> action)
+    public static async Task ForEachAsync<Target>(this IEnumerable<Target> source, Func<Target, int, Task> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList<Target> array)
@@ -478,8 +442,6 @@ public static partial class EnumerableExtensions
                 await action(item, index);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -487,11 +449,11 @@ public static partial class EnumerableExtensions
     /// </summary>
     /// <param name="source">The collection of elements to be processed by the action.</param>
     /// <param name="action">The operation to perform on each element of the collection.</param>
-    public static IEnumerable ForEach(this IEnumerable source, Action<object?> action)
+    public static void ForEach(this IEnumerable source, Action<object?> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList list)
@@ -508,8 +470,6 @@ public static partial class EnumerableExtensions
                 action(item);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -546,11 +506,11 @@ public static partial class EnumerableExtensions
     /// <param name="source">The collection of elements to iterate over.</param>
     /// <param name="action">An asynchronous function to execute for each element in the collection.</param>
     /// <returns>The original collection after all actions have been executed.</returns>
-    public static async Task<IEnumerable> ForEachAsync(this IEnumerable source, Func<object?, Task> action)
+    public static async Task ForEachAsync(this IEnumerable source, Func<object?, Task> action)
     {
         if (source is null || action is null)
         {
-            return source!;
+            return;
         }
 
         if (source is IList list)
@@ -567,8 +527,6 @@ public static partial class EnumerableExtensions
                 await action(item);
             }
         }
-
-        return source;
     }
 
     /// <summary>
@@ -907,7 +865,9 @@ public static partial class EnumerableExtensions
             return;
         }
 
-        while (source.TryTake(out _)) { }
+        while (source.TryTake(out _))
+        {
+        }
     }
 
     /// <summary>
@@ -976,17 +936,21 @@ public static partial class EnumerableExtensions
     /// <param name="dict">The mutable dictionary to be converted into a read-only version.</param>
     /// <returns>A read-only dictionary containing the same key-value pairs as the input dictionary.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided dictionary is null.</exception>
-    public static IReadOnlyDictionary<TKey, TValue> ToReadOnlayDictionary<TKey, TValue>(this IDictionary<TKey, TValue> dict)
+    public static IReadOnlyDictionary<TKey, TValue> ToReadOnlayDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> dict)
         where TKey : notnull
     {
         _ = dict ?? throw new ArgumentNullException(nameof(dict));
 
         if (dict is IReadOnlyDictionary<TKey, TValue> read)
         {
-            //
-            return read;
+            return read;      //
         }
 
-        return new ReadOnlyDictionary<TKey, TValue>(dict);
+        if (dict is IDictionary<TKey, TValue> dics)
+        {
+            return new ReadOnlyDictionary<TKey, TValue>(dics);      //
+        }
+
+        return new ReadOnlyDictionary<TKey, TValue>(dict.ToDictionary(x => x.Key, x => x.Value));
     }
 }

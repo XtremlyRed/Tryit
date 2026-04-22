@@ -61,38 +61,46 @@ public static class TypeConverterExtensions
     /// <exception cref="InvalidOperationException">Thrown when a type converter for the specified conversion is not registered.</exception>
     public static object ConvertTo(this object? from, Type toType)
     {
-        _ = from ?? throw new ArgumentNullException(nameof(from));
-
-        if (from is IConvertible convertible && typeCodeNames.Contains(toType.Name))
+      
+        try
         {
-            var converted = convertible.ToType(toType, CultureInfo.CurrentCulture);
-
-            if (converted is not null)
+            if (from is IConvertible convertible && typeCodeNames.Contains(toType.Name))
             {
-                return converted;
+                var converted = convertible.ToType(toType, CultureInfo.CurrentCulture);
+
+                if (converted is not null)
+                {
+                    return converted;
+                }
             }
+
+            Type fromType = from?.GetType() ?? throw new ArgumentNullException(nameof(from));
+
+
+            if (typeConvertMaps.TryGetValue(fromType, out ConcurrentDictionary<Type, TypeConverter>? fromTypeConverterStorages) == false)
+            {
+                typeConvertMaps[fromType] = fromTypeConverterStorages = new ConcurrentDictionary<Type, TypeConverter>();
+            }
+
+            if (fromTypeConverterStorages.TryGetValue(toType, out TypeConverter? toTypeConverter) == false)
+            {
+                toTypeConverter = TypeDescriptor.GetConverter(toType) ?? throw new InvalidOperationException("type converter not registered");
+
+                fromTypeConverterStorages[toType] = toTypeConverter;
+            }
+
+            if (toTypeConverter.CanConvertFrom(fromType))
+            {
+                return toTypeConverter.ConvertFrom(from)!;
+            }
+
         }
-
-        Type fromType = from.GetType();
-
-        if (typeConvertMaps.TryGetValue(fromType, out ConcurrentDictionary<Type, TypeConverter>? fromTypeConverterStorages) == false)
+        catch (FormatException)
         {
-            typeConvertMaps[fromType] = fromTypeConverterStorages = new ConcurrentDictionary<Type, TypeConverter>();
+            //ignore format exception and try other converters
         }
 
-        if (fromTypeConverterStorages.TryGetValue(toType, out TypeConverter? toTypeConverter) == false)
-        {
-            toTypeConverter = TypeDescriptor.GetConverter(toType) ?? throw new InvalidOperationException("type converter not registered");
-
-            fromTypeConverterStorages[toType] = toTypeConverter;
-        }
-
-        if (toTypeConverter.CanConvertFrom(fromType))
-        {
-            return toTypeConverter.ConvertFrom(from)!;
-        }
-
-        throw new InvalidOperationException($"type converter from {fromType} to {toType} not registered");
+        throw new InvalidCastException($"type converter from : {from} to {toType} not registered");
     }
 
     /// <summary>

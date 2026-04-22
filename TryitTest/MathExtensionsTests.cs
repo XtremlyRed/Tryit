@@ -78,7 +78,7 @@ public class MathExtensionsTests
         double value2 = 1.234568;
 
         // Act
-        bool result = value1.CoerceEquals(value2);
+        bool result = value1.CoerceEquals(value2,5);
 
         // Assert
         Assert.IsTrue(result);

@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Windows;
 
 using Tryit.Wpf;
 
@@ -14,6 +16,27 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        ConcurrentBag<int> bag = new(Enumerable.Range(0, 10));
+
+
+        var count = 0;
+
+       
+
+
+        while (count++<100)
+        {
+            if(bag.TryTake(out var value))
+            {
+                Debug.WriteLine(value);
+
+                bag.Add(value);
+
+            }
+        }
+
+
 
     }
 

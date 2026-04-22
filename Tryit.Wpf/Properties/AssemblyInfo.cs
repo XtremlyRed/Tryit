@@ -18,6 +18,7 @@ global using ComboBox = System.Windows.Controls.ComboBox;
 global using DataGrid = System.Windows.Controls.DataGrid;
 global using DataGridColumn = System.Windows.Controls.DataGridColumn;
 global using DBA = System.Diagnostics.DebuggerBrowsableAttribute;
+global using DependencyPropertyChangedEventArgs = System.Windows.DependencyPropertyChangedEventArgs;
 global using HorizontalAlignment = System.Windows.HorizontalAlignment;
 global using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 global using Panel = System.Windows.Controls.Panel;

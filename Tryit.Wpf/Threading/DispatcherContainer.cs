@@ -15,14 +15,6 @@ namespace Tryit.Wpf.Threading;
 public sealed class DispatcherContainer : FrameworkElement
 {
     /// <summary>
-    /// Initializes a new instance of the DispatcherContainer class.
-    /// </summary>
-    public DispatcherContainer()
-    {
-        _hostVisual = new InteractiveHostVisual();
-    }
-
-    /// <summary>
     /// Represents the visual host used to display visual content in a separate visual tree.
     /// </summary>
     private readonly HostVisual _hostVisual;
@@ -31,6 +23,16 @@ public sealed class DispatcherContainer : FrameworkElement
     ///
     /// </summary>
     private VisualTargetPresentationSource _targetSource = default!;
+
+    /// <summary>
+    /// Initializes a new instance of the DispatcherContainer class.
+    /// </summary>
+    public DispatcherContainer()
+    {
+        _hostVisual = new InteractiveHostVisual();
+    }
+
+
 
     #region Child
 
@@ -98,12 +100,13 @@ public sealed class DispatcherContainer : FrameworkElement
         async Task SetChildAsync()
         {
             UIElement oldChild = Child;
-            VisualTargetPresentationSource visualTarget = _targetSource;
 
             if (Equals(oldChild, value))
             {
                 return;
             }
+
+            VisualTargetPresentationSource visualTarget = _targetSource;
 
             _targetSource = null!;
             if (visualTarget != null)
@@ -112,9 +115,7 @@ public sealed class DispatcherContainer : FrameworkElement
                 await visualTarget.Dispatcher.InvokeAsync(visualTarget.Dispose);
             }
 
-            Child = value;
-
-            if (value == null)
+            if ((Child = value) == null)
             {
                 _targetSource = null!;
             }
@@ -171,7 +172,7 @@ public sealed class DispatcherContainer : FrameworkElement
             return default(Size);
         }
 
-        child.Dispatcher.InvokeAsync(() => child.Measure(availableSize), DispatcherPriority.Loaded);
+        _ = child.Dispatcher.InvokeAsync(() => child.Measure(availableSize), DispatcherPriority.Loaded);
 
         return default(Size);
     }
@@ -192,7 +193,7 @@ public sealed class DispatcherContainer : FrameworkElement
             return finalSize;
         }
 
-        child.Dispatcher.InvokeAsync(() => child.Arrange(new Rect(finalSize)), DispatcherPriority.Loaded);
+        _ = child.Dispatcher.InvokeAsync(() => child.Arrange(new Rect(finalSize)), DispatcherPriority.Loaded);
 
         return finalSize;
     }
