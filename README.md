@@ -1,4 +1,4 @@
-# HiLibrary.CSharp
+# Tryit.CSharp
 
 A comprehensive C# utility library providing common helpers, extensions, and WPF components for .NET applications.
 
@@ -6,10 +6,10 @@ A comprehensive C# utility library providing common helpers, extensions, and WPF
 
 ## Features
 
-HiLibrary.CSharp is organized into two main packages:
+Tryit.CSharp is organized into two main packages:
 
-- **HiLibrary** - Core utilities, extensions, and helpers for any .NET application
-- **HiLibrary.Wpf** - WPF-specific components including animations, dialogs, popups, and converters
+- **Tryit.Core** - Core utilities, extensions, and helpers for any .NET application
+- **Tryit.Wpf** - WPF-specific components including animations, dialogs, popups, and converters
 
 ## Supported Frameworks
 
@@ -17,22 +17,21 @@ HiLibrary.CSharp is organized into two main packages:
 |----------------|------------------|
 | .NET Framework  | 4.5.1, 4.7.2      |
 | .NET Core      | 3.1              |
-| .NET           | 6.0, 8.0, 9.0      |
-| .NET Standard  | 2.0              |
+| .NET           | 8.0, 10.0      | 
 
 ## Installation
 
 ```bash
 # Install core library
-dotnet add package Hi.Core
+dotnet add package Tryit.Core
 
 # Install WPF library (for WPF projects)
-dotnet add package Hi.Wpf
+dotnet add package Tryit.Wpf
 ```
 
 ---
 
-## HiLibrary (Core)
+## Tryit (Core)
 
 ### Commands
 
@@ -315,7 +314,7 @@ public void Process(string input, object data)
 
 ---
 
-## HiLibrary.Wpf
+## Tryit.Wpf
 
 ### Animations
 
@@ -461,7 +460,7 @@ Converters.StringToBrush                    // "#FF0000" -> Brush
 **Usage in XAML:**
 
 ```xml
-<Window xmlns:hi="clr-namespace:HiLibrary;assembly=HiLibrary.Wpf">
+<Window xmlns:hi="clr-namespace:Tryit;assembly=Tryit.Wpf">
     <Button Visibility="{Binding HasItems, 
         Converter={x:Static hi:Converters.BooleanToVisibility}}" />
     
