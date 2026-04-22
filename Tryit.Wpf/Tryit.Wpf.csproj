@@ -4,7 +4,6 @@
 			net451;
 			net472;
 			netcoreapp3.1;
-			net6.0-windows;
 			net8.0-windows;
 			net10.0-windows;
 		</TargetFrameworks>
