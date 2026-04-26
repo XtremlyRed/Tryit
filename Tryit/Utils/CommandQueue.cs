@@ -355,28 +355,28 @@ internal class CommandPacket<T>
     {
         if (command is ICommandItem commandItem)
         {
-            Interlocked.Increment(ref commandCounter);
-
             if (commandItem.CommandType == CommandType.Once)
             {
                 onceItems.Enqueue(command);
+                Interlocked.Increment(ref commandCounter);
             }
             else if (commandItem.CommandType == CommandType.Continuous)
             {
                 continuousItems.Add(command);
+                Interlocked.Increment(ref commandCounter);
             }
         }
         else if (command is IAsyncCommandItem asyncCommandItem)
         {
-            Interlocked.Increment(ref commandCounter);
-
             if (asyncCommandItem.CommandType == CommandType.Once)
             {
                 onceItems.Enqueue(command);
+                Interlocked.Increment(ref commandCounter);
             }
             else if (asyncCommandItem.CommandType == CommandType.Continuous)
             {
                 continuousItems.Add(command);
+                Interlocked.Increment(ref commandCounter);
             }
         }
     }

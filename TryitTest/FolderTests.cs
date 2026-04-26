@@ -115,7 +115,9 @@ public class FolderTests
     public void ImplicitStringConversion_WithAutoCreate_CreatesDirectory()
     {
         // Arrange
+        Folder.AutoCreateFolder = true;
         Folder folder = _tempTestFolder;
+        Directory.Delete(folder, true);
         Assert.IsFalse(Directory.Exists(_tempTestFolder), "Pre-condition: Directory should not exist.");
 
         // Act
@@ -124,6 +126,8 @@ public class FolderTests
         // Assert
         Assert.AreEqual(_tempTestFolder, path);
         Assert.IsTrue(Directory.Exists(_tempTestFolder), "Directory should have been created.");
+
+        Directory.Delete(_tempTestFolder, true);
     }
 
     [TestMethod]
@@ -131,7 +135,11 @@ public class FolderTests
     {
         // Arrange
         Folder.AutoCreateFolder = false;
+
+        Directory.Delete(_tempTestFolder, true);
+
         Folder folder = _tempTestFolder;
+
         Assert.IsFalse(Directory.Exists(_tempTestFolder), "Pre-condition: Directory should not exist.");
 
         // Act
@@ -140,6 +148,8 @@ public class FolderTests
         // Assert
         Assert.AreEqual(_tempTestFolder, path);
         Assert.IsFalse(Directory.Exists(_tempTestFolder), "Directory should not have been created.");
+
+        Folder.AutoCreateFolder = true;
     }
 
     [TestMethod]

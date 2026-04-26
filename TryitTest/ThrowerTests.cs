@@ -158,8 +158,8 @@ namespace TryitTest.Utils
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
-        public void IsNull_WithNullObject_ThrowsArgumentException()
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void IsNull_WithNullObject_ThrowsArgumentNulException()
         {
             // Arrange
             object? nullObject = null;

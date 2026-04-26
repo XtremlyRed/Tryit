@@ -13,6 +13,10 @@ namespace Tryit;
 /// </summary>
 public static class Thrower
 {
+    const string nullMessage = "{0}:{1} is null in file {1} at line {2}.";
+    const string NullOrWhiteSpaceMessage = "{0} is null or empty in file {1} at line {2}.";
+    const string nullOeEmptyMessage = "{0} is null or empty in file {1} at line {2}.";
+
     /// <summary>
     /// Checks if a string is null or empty and throws an exception if it is.
     /// </summary>
@@ -22,24 +26,23 @@ public static class Thrower
     /// <param name="callerFileName">The file path of the source code where the call originated, used in the exception message.</param>
     /// <param name="callerLineNumner">The line number in the source code where the call was made, included in the exception message.</param>
     /// <exception cref="ArgumentException">Thrown when the string is null or empty, indicating the issue with the specified argument.</exception>
-    public static void IsNullOrEmpty(
-        string? @string,
-        string? argumentName = null,
-        [CallerMemberName] string? caller = null,
-        [CallerFilePath] string? callerFileName = null,
-        [CallerLineNumber] int? callerLineNumner = null
-    )
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void IsNullOrEmpty(string? @string,
+#if !NETSTANDARD2_0
+        [CallerArgumentExpression(nameof(@string))]
+#endif
+        string? argumentName = null, [CallerMemberName] string? caller = null, [CallerFilePath] string? callerFileName = null, [CallerLineNumber] int? callerLineNumner = null)
     {
-        if (string.IsNullOrEmpty(@string) == false)
+        if (string.IsNullOrEmpty(@string))
         {
-            return;
+            throw new ArgumentException(string.Format(nullOeEmptyMessage,
+#if !NETSTANDARD2_0
+                    argumentName
+#else
+                    string.IsNullOrWhiteSpace(argumentName) ? caller : argumentName
+#endif
+                    , callerFileName, callerLineNumner));
         }
-
-        var argu = string.IsNullOrWhiteSpace(argumentName) ? caller : argumentName;
-
-        const string nullOeEmptyMessage = "{0} is null or empty in file {1} at line {2}.";
-
-        throw new ArgumentException(string.Format(nullOeEmptyMessage, argu, callerFileName, callerLineNumner));
     }
 
     /// <summary>
@@ -52,24 +55,23 @@ public static class Thrower
     /// <param name="callerFileName">The file path of the source code where the validation was called, used in the exception message.</param>
     /// <param name="callerLineNumner">The line number in the source code where the validation was invoked, included in the exception message.</param>
     /// <exception cref="ArgumentException">Thrown when the string is null or white-space, indicating the issue with the specified argument.</exception>
-    public static void IsNullOrWhiteSpace(
-        string? @string,
-        string? argumentName = null,
-        [CallerMemberName] string? caller = null,
-        [CallerFilePath] string? callerFileName = null,
-        [CallerLineNumber] int? callerLineNumner = null
-    )
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void IsNullOrWhiteSpace(string? @string,
+#if !NETSTANDARD2_0
+        [CallerArgumentExpression(nameof(@string))]
+#endif
+        string? argumentName = null, [CallerMemberName] string? caller = null, [CallerFilePath] string? callerFileName = null, [CallerLineNumber] int? callerLineNumner = null)
     {
-        if (string.IsNullOrWhiteSpace(@string) == false)
+        if (string.IsNullOrWhiteSpace(@string))
         {
-            return;
+            throw new ArgumentException(string.Format(NullOrWhiteSpaceMessage,
+#if !NETSTANDARD2_0
+                    argumentName
+#else
+                    string.IsNullOrWhiteSpace(argumentName) ? caller : argumentName
+#endif
+                    , callerFileName, callerLineNumner));
         }
-
-        var argu = string.IsNullOrWhiteSpace(argumentName) ? caller : argumentName;
-
-        const string nullOeEmptyMessage = "{0} is null or empty in file {1} at line {2}.";
-
-        throw new ArgumentException(string.Format(nullOeEmptyMessage, argu, callerFileName, callerLineNumner));
     }
 
     /// <summary>
@@ -81,19 +83,24 @@ public static class Thrower
     /// <param name="argumentName">An optional name for the object, used in the exception message if provided.</param>
     /// <param name="callerFileName">The file name from which the method was called, used for debugging purposes.</param>
     /// <param name="callerLineNumner">The line number in the file where the method was called, aiding in identifying the source of the call.</param>
-    /// <exception cref="ArgumentException">Thrown when the object is not null, indicating a violation of the null check.</exception>
-    public static void IsNull<T>(T? @object, string? argumentName = null, [CallerFilePath] string? callerFileName = null, [CallerLineNumber] int? callerLineNumner = null)
+    /// <exception cref="ArgumentNullException">Thrown when the object is not null, indicating a violation of the null check.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void IsNull<T>(T? @object,
+#if !NETSTANDARD2_0
+        [CallerArgumentExpression(nameof(@object))]
+#endif
+        string? argumentName = null, [CallerFilePath] string? callerFileName = null, [CallerLineNumber] int? callerLineNumner = null)
         where T : class
     {
-        if (@object is not null)
+        if (@object is null)
         {
-            return;
+            throw new ArgumentNullException(string.Format(nullMessage,
+#if !NETSTANDARD2_0
+                    argumentName
+#else
+                    string.IsNullOrWhiteSpace(argumentName) ? "object" : argumentName
+#endif
+                    , callerFileName, callerLineNumner));
         }
-
-        var argu = string.IsNullOrWhiteSpace(argumentName) ? "object" : argumentName;
-
-        const string nullOeEmptyMessage = "{0}:{1} is null in file {1} at line {2}.";
-
-        throw new ArgumentException(string.Format(nullOeEmptyMessage, argu, callerFileName, callerLineNumner));
     }
 }

@@ -17,9 +17,15 @@
   <ItemGroup>
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" PrivateAssets="All" />
   </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.StartsWith('netstandard'))">
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputPath>$(SolutionDir)\bin\$(Configuration)</OutputPath>
     <IntermediateOutputPath>$(SolutionDir)\obj\$(Configuration)\$(MSBuildProjectName)</IntermediateOutputPath>
   </PropertyGroup>
+
   <Import Project="$(SolutionDir)\GlobalCompileSettings.Targets" />
 </Project>

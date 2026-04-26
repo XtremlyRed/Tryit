@@ -48,10 +48,7 @@ namespace TryitTest.Command
             var canExecute = command.CanExecute();
 
             // Assert
-            Assert.IsTrue(
-                canExecute,
-                "CanExecute should return true when no predicate is provided."
-            );
+            Assert.IsTrue(canExecute, "CanExecute should return true when no predicate is provided.");
         }
 
         [TestMethod]
@@ -62,16 +59,10 @@ namespace TryitTest.Command
             var command = new BindingCommand(() => { }, () => canExecutePredicate);
 
             // Act & Assert
-            Assert.IsFalse(
-                command.CanExecute(),
-                "CanExecute should return the predicate's value (false)."
-            );
+            Assert.IsFalse(command.CanExecute(), "CanExecute should return the predicate's value (false).");
 
             canExecutePredicate = true;
-            Assert.IsTrue(
-                command.CanExecute(),
-                "CanExecute should return the predicate's value (true)."
-            );
+            Assert.IsTrue(command.CanExecute(), "CanExecute should return the predicate's value (true).");
         }
 
         [TestMethod]
@@ -107,6 +98,8 @@ namespace TryitTest.Command
         [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ThrowsException_NoGlobalHandler_Rethrows()
         {
+            BindingCommand.SetGlobalCommandExceptionCallback(null);
+
             // Arrange
             var command = new BindingCommand(() => throw new InvalidOperationException());
 
@@ -128,11 +121,7 @@ namespace TryitTest.Command
 
             // Assert
             Assert.IsNotNull(caughtException, "Global exception handler should have been called.");
-            Assert.AreSame(
-                expectedException,
-                caughtException,
-                "The correct exception should be passed to the handler."
-            );
+            Assert.AreSame(expectedException, caughtException, "The correct exception should be passed to the handler.");
         }
 
         [TestMethod]
@@ -146,10 +135,7 @@ namespace TryitTest.Command
             command.Execute();
 
             // Assert
-            Assert.IsFalse(
-                command.IsExecuting,
-                "IsExecuting should be reset to false even if an exception occurs."
-            );
+            Assert.IsFalse(command.IsExecuting, "IsExecuting should be reset to false even if an exception occurs.");
         }
 
         [TestMethod]
