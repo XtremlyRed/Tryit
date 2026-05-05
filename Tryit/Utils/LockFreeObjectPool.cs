@@ -13,6 +13,8 @@ public sealed class LockFreeObjectPool<T>
 
     private int _tail;
 
+    private int flag;
+
     public LockFreeObjectPool(int capacity = 32)
     {
         if (capacity < 2 || (capacity & (capacity - 1)) != 0)
@@ -27,24 +29,38 @@ public sealed class LockFreeObjectPool<T>
 
     public T Rent()
     {
-        int tail = Volatile.Read(ref _tail);
-
-        if (tail == Volatile.Read(ref _head))
+        try
         {
-            return new T();
+            SpinWait spinWait = default!;
+
+            while (Interlocked.CompareExchange(ref flag, 1, 0) != 0)
+            {
+                spinWait.SpinOnce();
+            }
+
+            int tail = Volatile.Read(ref _tail);
+
+            if (tail == Volatile.Read(ref _head))
+            {
+                return new T();
+            }
+
+            int nextTail = tail + 1;
+
+            int idx = (int)(tail & _mask);
+
+            T item = _buffer[idx];
+
+            _buffer[idx] = null!;
+
+            Volatile.Write(ref _tail, nextTail);
+
+            return item ?? new T();
         }
-
-        int nextTail = tail + 1;
-
-        int idx = (int)(tail & _mask);
-
-        T item = _buffer[idx];
-
-        _buffer[idx] = null!;
-
-        Volatile.Write(ref _tail, nextTail);
-
-        return item ?? new T();
+        finally
+        {
+            Interlocked.Exchange(ref flag, 0);
+        }
     }
 
     public void Return(T item)
@@ -54,19 +70,33 @@ public sealed class LockFreeObjectPool<T>
             return;
         }
 
-        int head = Volatile.Read(ref _head);
-        int nextHead = head + 1;
-
-        if ((nextHead - Volatile.Read(ref _tail)) > _buffer.Length)
+        try
         {
-            return;
+            SpinWait spinWait = default!;
+
+            while (Interlocked.CompareExchange(ref flag, 1, 0) != 0)
+            {
+                spinWait.SpinOnce();
+            }
+
+            int head = Volatile.Read(ref _head);
+            int nextHead = head + 1;
+
+            if ((nextHead - Volatile.Read(ref _tail)) > _buffer.Length)
+            {
+                return;
+            }
+
+            int idx = (int)(head & _mask);
+
+            _buffer[idx] = item;
+
+            Volatile.Write(ref _head, nextHead);
         }
-
-        int idx = (int)(head & _mask);
-
-        _buffer[idx] = item;
-
-        Volatile.Write(ref _head, nextHead);
+        finally
+        {
+            Interlocked.Exchange(ref flag, 0);
+        }
     }
 
     public Lease RentLease()

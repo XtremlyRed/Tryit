@@ -14,237 +14,237 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Desktop"/> folder
     /// </summary>
-    public static Folder Desktop = new(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
+    public static readonly Folder Desktop = new(Environment.GetFolderPath(Environment.SpecialFolder.Desktop));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Programs"/> folder
     /// </summary>
-    public static Folder Programs = new(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
+    public static readonly Folder Programs = new(Environment.GetFolderPath(Environment.SpecialFolder.Programs));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.MyDocuments"/> folder
     /// </summary>
-    public static Folder MyDocuments = new(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+    public static readonly Folder MyDocuments = new(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Favorites"/> folder
     /// </summary>
-    public static Folder Favorites = new(Environment.GetFolderPath(Environment.SpecialFolder.Favorites));
+    public static readonly Folder Favorites = new(Environment.GetFolderPath(Environment.SpecialFolder.Favorites));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Startup"/> folder
     /// </summary>
-    public static Folder Startup = new(Environment.GetFolderPath(Environment.SpecialFolder.Startup));
+    public static readonly Folder Startup = new(Environment.GetFolderPath(Environment.SpecialFolder.Startup));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Recent"/> folder
     /// </summary>
-    public static Folder Recent = new(Environment.GetFolderPath(Environment.SpecialFolder.Recent));
+    public static readonly Folder Recent = new(Environment.GetFolderPath(Environment.SpecialFolder.Recent));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.SendTo"/> folder
     /// </summary>
-    public static Folder SendTo = new(Environment.GetFolderPath(Environment.SpecialFolder.SendTo));
+    public static readonly Folder SendTo = new(Environment.GetFolderPath(Environment.SpecialFolder.SendTo));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.StartMenu"/> folder
     /// </summary>
-    public static Folder StartMenu = new(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu));
+    public static readonly Folder StartMenu = new(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.MyMusic"/> folder
     /// </summary>
-    public static Folder MyMusic = new(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
+    public static readonly Folder MyMusic = new(Environment.GetFolderPath(Environment.SpecialFolder.MyMusic));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.MyVideos"/> folder
     /// </summary>
-    public static Folder MyVideos = new(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
+    public static readonly Folder MyVideos = new(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.DesktopDirectory"/> folder
     /// </summary>
-    public static Folder DesktopDirectory = new(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
+    public static readonly Folder DesktopDirectory = new(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.MyComputer"/> folder
     /// </summary>
-    public static Folder MyComputer = new(Environment.GetFolderPath(Environment.SpecialFolder.MyComputer));
+    public static readonly Folder MyComputer = new(Environment.GetFolderPath(Environment.SpecialFolder.MyComputer));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.NetworkShortcuts"/> folder
     /// </summary>
-    public static Folder NetworkShortcuts = new(Environment.GetFolderPath(Environment.SpecialFolder.NetworkShortcuts));
+    public static readonly Folder NetworkShortcuts = new(Environment.GetFolderPath(Environment.SpecialFolder.NetworkShortcuts));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Fonts"/> folder
     /// </summary>
-    public static Folder Fonts = new(Environment.GetFolderPath(Environment.SpecialFolder.Fonts));
+    public static readonly Folder Fonts = new(Environment.GetFolderPath(Environment.SpecialFolder.Fonts));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Templates"/> folder
     /// </summary>
-    public static Folder Templates = new(Environment.GetFolderPath(Environment.SpecialFolder.Templates));
+    public static readonly Folder Templates = new(Environment.GetFolderPath(Environment.SpecialFolder.Templates));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonStartMenu"/> folder
     /// </summary>
-    public static Folder CommonStartMenu = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu));
+    public static readonly Folder CommonStartMenu = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonPrograms"/> folder
     /// </summary>
-    public static Folder CommonPrograms = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms));
+    public static readonly Folder CommonPrograms = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonStartup"/> folder
     /// </summary>
-    public static Folder CommonStartup = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup));
+    public static readonly Folder CommonStartup = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartup));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonDesktopDirectory"/> folder
     /// </summary>
-    public static Folder CommonDesktopDirectory = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
+    public static readonly Folder CommonDesktopDirectory = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.ApplicationData"/> folder
     /// </summary>
-    public static Folder ApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+    public static readonly Folder ApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.PrinterShortcuts"/> folder
     /// </summary>
-    public static Folder PrinterShortcuts = new(Environment.GetFolderPath(Environment.SpecialFolder.PrinterShortcuts));
+    public static readonly Folder PrinterShortcuts = new(Environment.GetFolderPath(Environment.SpecialFolder.PrinterShortcuts));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.LocalApplicationData"/> folder
     /// </summary>
-    public static Folder LocalApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+    public static readonly Folder LocalApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.InternetCache"/> folder
     /// </summary>
-    public static Folder InternetCache = new(Environment.GetFolderPath(Environment.SpecialFolder.InternetCache));
+    public static readonly Folder InternetCache = new(Environment.GetFolderPath(Environment.SpecialFolder.InternetCache));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Cookies"/> folder
     /// </summary>
-    public static Folder Cookies = new(Environment.GetFolderPath(Environment.SpecialFolder.Cookies));
+    public static readonly Folder Cookies = new(Environment.GetFolderPath(Environment.SpecialFolder.Cookies));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.History"/> folder
     /// </summary>
-    public static Folder History = new(Environment.GetFolderPath(Environment.SpecialFolder.History));
+    public static readonly Folder History = new(Environment.GetFolderPath(Environment.SpecialFolder.History));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonApplicationData"/> folder
     /// </summary>
-    public static Folder CommonApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
+    public static readonly Folder CommonApplicationData = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Windows"/> folder
     /// </summary>
-    public static Folder Windows = new(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+    public static readonly Folder Windows = new(Environment.GetFolderPath(Environment.SpecialFolder.Windows));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.System"/> folder
     /// </summary>
-    public static Folder System = new(Environment.GetFolderPath(Environment.SpecialFolder.System));
+    public static readonly Folder System = new(Environment.GetFolderPath(Environment.SpecialFolder.System));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.ProgramFiles"/> folder
     /// </summary>
-    public static Folder ProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
+    public static readonly Folder ProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.MyPictures"/> folder
     /// </summary>
-    public static Folder MyPictures = new(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
+    public static readonly Folder MyPictures = new(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.UserProfile"/> folder
     /// </summary>
-    public static Folder UserProfile = new(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+    public static readonly Folder UserProfile = new(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.SystemX86"/> folder
     /// </summary>
-    public static Folder SystemX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86));
+    public static readonly Folder SystemX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.SystemX86));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.ProgramFilesX86"/> folder
     /// </summary>
-    public static Folder ProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+    public static readonly Folder ProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonProgramFiles"/> folder
     /// </summary>
-    public static Folder CommonProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles));
+    public static readonly Folder CommonProgramFiles = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFiles));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonProgramFilesX86"/> folder
     /// </summary>
-    public static Folder CommonProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFilesX86));
+    public static readonly Folder CommonProgramFilesX86 = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonProgramFilesX86));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonTemplates"/> folder
     /// </summary>
-    public static Folder CommonTemplates = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonTemplates));
+    public static readonly Folder CommonTemplates = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonTemplates));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonDocuments"/> folder
     /// </summary>
-    public static Folder CommonDocuments = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments));
+    public static readonly Folder CommonDocuments = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonAdminTools"/> folder
     /// </summary>
-    public static Folder CommonAdminTools = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonAdminTools));
+    public static readonly Folder CommonAdminTools = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonAdminTools));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.AdminTools"/> folder
     /// </summary>
-    public static Folder AdminTools = new(Environment.GetFolderPath(Environment.SpecialFolder.AdminTools));
+    public static readonly Folder AdminTools = new(Environment.GetFolderPath(Environment.SpecialFolder.AdminTools));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonMusic"/> folder
     /// </summary>
-    public static Folder CommonMusic = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic));
+    public static readonly Folder CommonMusic = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonMusic));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonPictures"/> folder
     /// </summary>
-    public static Folder CommonPictures = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures));
+    public static readonly Folder CommonPictures = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonPictures));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonVideos"/> folder
     /// </summary>
-    public static Folder CommonVideos = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonVideos));
+    public static readonly Folder CommonVideos = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonVideos));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.Resources"/> folder
     /// </summary>
-    public static Folder Resources = new(Environment.GetFolderPath(Environment.SpecialFolder.Resources));
+    public static readonly Folder Resources = new(Environment.GetFolderPath(Environment.SpecialFolder.Resources));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.LocalizedResources"/> folder
     /// </summary>
-    public static Folder LocalizedResources = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalizedResources));
+    public static readonly Folder LocalizedResources = new(Environment.GetFolderPath(Environment.SpecialFolder.LocalizedResources));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CommonOemLinks"/> folder
     /// </summary>
-    public static Folder CommonOemLinks = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonOemLinks));
+    public static readonly Folder CommonOemLinks = new(Environment.GetFolderPath(Environment.SpecialFolder.CommonOemLinks));
 
     /// <summary>
     /// <see cref="Environment.SpecialFolder.CDBurning"/> folder
     /// </summary>
-    public static Folder CDBurning = new(Environment.GetFolderPath(Environment.SpecialFolder.CDBurning));
+    public static readonly Folder CDBurning = new(Environment.GetFolderPath(Environment.SpecialFolder.CDBurning));
 
     /// <summary>
     /// <see cref="Environment.CurrentDirectory"/> folder
     /// </summary>
-    public static Folder Current = new(Environment.CurrentDirectory);
+    public static readonly Folder Current = new(Environment.CurrentDirectory);
 
     /// <summary>
     /// auto create folder when not exist
@@ -255,9 +255,19 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
     /// <summary>
     /// share a new <see cref="Folder"/> folder
     /// </summary>
-    public Folder(string folder)
+    private Folder(string folder)
     {
         this.folder = folder;
+    }
+
+    /// <summary>
+    /// Creates a new instance of the Folder class from the specified folder path.
+    /// </summary>
+    /// <param name="folder">The path of the folder to represent. Cannot be null or empty.</param>
+    /// <returns>A Folder instance representing the specified folder path.</returns>
+    public static Folder From(string folder)
+    {
+        return new Folder(folder);
     }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -277,19 +287,24 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
             throw new ArgumentNullException(nameof(paths));
         }
 
-        var path2s = Enumerable.Repeat(folder, 1).Concat(paths)!.ToArray();
+        var path = new string[paths.Length + 1];
 
-        return new Folder(Path.Combine(path2s));
+        path[0] = folder;
+
+        Array.Copy(paths, 0, path, 1, paths.Length);
+
+        return new Folder(Path.Combine(path));
     }
 
     /// <summary>
-    /// combines four strings into a path.
+    /// Combines one or more path segments into a single folder path.
     /// </summary>
-    /// <param name="paths">an array of parts of the path.</param>
-    /// <Exception cref="System.ArgumentException">one of the strings in the array contains one or more of the invalid characters defined in System.IO.Path.GetInvalidPathChars.</Exception>
-    /// <Exception cref="System.ArgumentNullException">one of the strings in the array is null.</Exception>
-    /// <returns>The combined paths.</returns>
-    public static Folder CombinePaths(params string[] paths)
+    /// <remarks>The method uses System.IO.Path.Combine to join the provided path segments. All segments are
+    /// combined in the order they appear in the array.</remarks>
+    /// <param name="paths">An array of path segments to combine. Each segment represents a part of the folder path.</param>
+    /// <returns>A Folder instance representing the combined path created from the specified segments.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if paths is null or contains no elements.</exception>
+    public static Folder Combines(params string[] paths)
     {
         if (paths is null || paths.Length == 0)
         {
@@ -307,28 +322,12 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
     {
         if (AutoCreateFolder)
         {
-            folder.TryCreateFolder();
+            if (Directory.Exists(folder) == false)
+            {
+                Directory.CreateDirectory(folder);
+            }
         }
         return folder.folder;
-    }
-
-    /// <summary>
-    ///  Create Directory If Not Exists
-    /// </summary>
-
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public Folder TryCreateFolder()
-    {
-        DirectoryInfo directoryInfo = new DirectoryInfo(folder);
-
-        if (directoryInfo.Exists == false)
-        {
-            directoryInfo.Create();
-        }
-
-        directoryInfo = default!;
-
-        return this;
     }
 
     /// <summary>
@@ -367,7 +366,6 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
     /// <returns>
     /// A <see cref="System.String" /> that represents this instance.
     /// </returns>
-
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override string ToString()
     {

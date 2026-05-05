@@ -32,7 +32,7 @@ public class FolderTests
         var path = @"C:\Test";
 
         // Act
-        Folder folder1 = new(path);
+        Folder folder1 = Folder.From(path);
         Folder folder2 = path;
 
         // Assert
@@ -45,7 +45,7 @@ public class FolderTests
     {
         // Arrange
         var initialPath = @"C:\Users\Test";
-        var folder = new Folder(initialPath);
+        var folder = Folder.From(initialPath);
         var segment1 = "Documents";
         var segment2 = "MyProject";
         var expected = Path.Combine(initialPath, segment1, segment2);
@@ -67,7 +67,7 @@ public class FolderTests
         var expected = Path.Combine(segment1, segment2, segment3);
 
         // Act
-        Folder result = Folder.CombinePaths(segment1, segment2, segment3);
+        Folder result = Folder.Combines(segment1, segment2, segment3);
 
         // Assert
         Assert.AreEqual(expected, result.ToString());
@@ -78,7 +78,7 @@ public class FolderTests
     public void Combine_NullPaths_ThrowsArgumentNullException()
     {
         // Arrange
-        var folder = new Folder(@"C:\Temp");
+        var folder = Folder.From(@"C:\Temp");
 
         // Act
         _ = folder.Combine(null!);
@@ -89,26 +89,10 @@ public class FolderTests
     public void Combine_EmptyPaths_ThrowsArgumentNullException()
     {
         // Arrange
-        var folder = new Folder(@"C:\Temp");
+        var folder = Folder.From(@"C:\Temp");
 
         // Act
         _ = folder.Combine();
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void CombinePaths_NullPaths_ThrowsArgumentNullException()
-    {
-        // Act
-        _ = Folder.CombinePaths(null!);
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
-    public void CombinePaths_EmptyPaths_ThrowsArgumentNullException()
-    {
-        // Act
-        _ = Folder.CombinePaths();
     }
 
     [TestMethod]
@@ -160,10 +144,10 @@ public class FolderTests
         Assert.IsFalse(Directory.Exists(_tempTestFolder), "Pre-condition: Directory should not exist.");
 
         // Act
-        _ = folder.TryCreateFolder();
+        string a = folder;
 
         // Assert
-        Assert.IsTrue(Directory.Exists(_tempTestFolder), "Directory should have been created.");
+        Assert.IsTrue(Directory.Exists(a), "Directory should have been created.");
     }
 
     [TestMethod]

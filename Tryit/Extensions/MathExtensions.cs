@@ -1,4 +1,6 @@
-﻿namespace System;
+﻿using System.Collections.ObjectModel;
+
+namespace System;
 
 /// <summary>
 /// Provides extension methods for various numeric types to constrain values within specified minimum and maximum
@@ -6,23 +8,47 @@
 /// </summary>
 public static partial class MathExtensions
 {
-    // 预计算的数字映射表，用于存储 1 / 10^i 的值，其中 i 的范围是 0 到 29。
-    private static readonly IReadOnlyDictionary<int, double> digitsMaps;
-    private static readonly IReadOnlyDictionary<int, decimal> decimalDigitsMaps;
+    /// <summary>
+    /// Represents an array of characters containing the digits 0-9 and uppercase letters A-Z.
+    /// </summary>
+    private static readonly char[] charArray = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
 
-    // 静态构造函数，用于初始化 digitsMaps。
+    /// <summary>
+    /// Provides a read-only mapping between integer keys and their corresponding double values.
+    /// </summary>
+    private static readonly ReadOnlyDictionary<int, double> digitsMaps;
+
+    /// <summary>
+    /// Provides a read-only mapping of integer keys to their corresponding decimal digit values.
+    /// </summary>
+    /// <remarks>This dictionary is intended for scenarios where a fixed association between integer
+    /// identifiers and decimal digit counts is required. The contents are immutable and should be accessed in a
+    /// thread-safe manner.</remarks>
+    private static readonly ReadOnlyDictionary<int, decimal> decimalDigitsMaps;
+
+    /// <summary>
+    /// Initializes static data for the MathExtensions class.
+    /// </summary>
+    /// <remarks>This static constructor precomputes and caches digit maps for use by static members of the
+    /// MathExtensions class. It is invoked automatically before any static member is accessed.</remarks>
     static MathExtensions()
     {
-        digitsMaps = Enumerable.Range(0, 30).ToDictionary(i => i, i => 1 / Math.Pow(10, i));
-        decimalDigitsMaps = Enumerable.Range(0, 30).ToDictionary(i => i, i => (decimal)(1 / Math.Pow(10, i)));
+        digitsMaps = Enumerable.Range(0, 30).ToReadOnlyDictionary(i => i, i => 1 / Math.Pow(10, i));
+        decimalDigitsMaps = Enumerable.Range(0, 30).ToReadOnlyDictionary(i => i, i => (decimal)(1 / Math.Pow(10, i)));
     }
 
     /// <summary>
-    /// 判断一个 double 值是否接近于零（在指定的精度 ± 1 / 10^<paramref name="digits"/> 范围内）。
+    /// Determines whether the specified double-precision floating-point value is considered zero within a given number
+    /// of decimal digits of precision.
     /// </summary>
-    /// <param name="doubleValue">要判断的 double 值。</param>
-    /// <param name="digits">精度（小数位数），默认为 6。</param>
-    /// <returns>如果值接近于零，则返回 true；否则返回 false。</returns>
+    /// <remarks>This method is useful for determining whether a floating-point value is effectively zero,
+    /// accounting for potential rounding errors. The supported digits values are determined by the implementation and
+    /// may be limited.</remarks>
+    /// <param name="doubleValue">The double-precision floating-point value to evaluate.</param>
+    /// <param name="digits">The number of decimal digits to use for the zero comparison. Must be greater than zero.</param>
+    /// <returns>true if the value is within the specified precision range of zero; otherwise, false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when digits is less than or equal to zero.</exception>
+    /// <exception cref="NotSupportedException">Thrown when the specified digits value is not supported for the comparison.</exception>
     public static bool IsCoerceZore(this double doubleValue, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -36,11 +62,16 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// 判断一个 float 值是否接近于零（在指定的精度 ± 1 / 10^<paramref name="digits"/> 范围内）。
+    /// Determines whether the specified floating-point value is considered zero within a given number of decimal digits
+    /// of precision.
     /// </summary>
-    /// <param name="floatValue">要判断的 float 值。</param>
-    /// <param name="digits">精度（小数位数），默认为 6。</param>
-    /// <returns>如果值接近于零，则返回 true；否则返回 false。</returns>
+    /// <remarks>This method is useful for comparing floating-point values to zero with a configurable
+    /// precision, helping to avoid issues with floating-point rounding errors.</remarks>
+    /// <param name="floatValue">The floating-point value to evaluate for near-zero equivalence.</param>
+    /// <param name="digits">The number of decimal digits to use for the zero comparison. Must be greater than zero.</param>
+    /// <returns>true if the value is within the specified precision range of zero; otherwise, false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if digits is less than or equal to zero.</exception>
+    /// <exception cref="NotSupportedException">Thrown if the specified digits value is not supported for comparison.</exception>
     public static bool IsCoerceZore(this float floatValue, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -55,11 +86,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// 判断一个 decimal 值是否接近于零（在指定的精度 ± 1 / 10^<paramref name="digits"/> 范围内）。
+    /// Determines whether the specified decimal value is considered effectively zero within a given number of decimal
+    /// places.
     /// </summary>
-    /// <param name="decimalValue">要判断的 decimal 值。</param>
-    /// <param name="digits">精度（小数位数），默认为 6。</param>
-    /// <returns>如果值接近于零，则返回 true；否则返回 false。</returns>
+    /// <remarks>This method is useful for comparing decimal values where small rounding errors may occur,
+    /// such as in financial or scientific calculations. The method checks if the value falls within a symmetric range
+    /// around zero, determined by the specified number of decimal places.</remarks>
+    /// <param name="decimalValue">The decimal value to evaluate for effective zero.</param>
+    /// <param name="digits">The number of decimal places to use when determining if the value is effectively zero. Must be greater than
+    /// zero. Defaults to 6.</param>
+    /// <returns>true if the absolute value of decimalValue is less than or equal to the threshold defined by digits; otherwise,
+    /// false.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when digits is less than or equal to zero.</exception>
+    /// <exception cref="NotSupportedException">Thrown when the specified digits value is not supported.</exception>
     public static bool IsCoerceZore(this decimal decimalValue, int digits = 6)
     {
         _ = digits <= 0 ? throw new ArgumentOutOfRangeException(nameof(digits)) : 0;
@@ -154,521 +193,591 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static byte CoerceIn(this byte input, byte minValue, byte maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static short CoerceIn(this short input, short minValue, short maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static int CoerceIn(this int input, int minValue, int maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static long CoerceIn(this long input, long minValue, long maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static float CoerceIn(this float input, float minValue, float maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static double CoerceIn(this double input, double minValue, double maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static decimal CoerceIn(this decimal input, decimal minValue, decimal maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static sbyte CoerceIn(this sbyte input, sbyte minValue, sbyte maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static ushort CoerceIn(this ushort input, ushort minValue, ushort maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static uint CoerceIn(this uint input, uint minValue, uint maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制在指定的最小值和最大值之间。
+    /// Restricts a byte value to be within the specified minimum and maximum bounds.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；如果大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <remarks>If input is less than minValue, minValue is returned. If input is greater than maxValue,
+    /// maxValue is returned. Otherwise, input is returned unchanged.</remarks>
+    /// <param name="input">The value to constrain within the specified range.</param>
+    /// <param name="minValue">The inclusive lower bound to which the value will be coerced if it is less than this value.</param>
+    /// <param name="maxValue">The inclusive upper bound to which the value will be coerced if it is greater than this value.</param>
+    /// <returns>A byte value that is no less than minValue and no greater than maxValue.</returns>
     public static ulong CoerceIn(this ulong input, ulong minValue, ulong maxValue)
     {
         return input <= minValue ? minValue : (input >= maxValue ? maxValue : input);
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static byte CoerceAtLeast(this byte input, byte minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static short CoerceAtLeast(this short input, short minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static int CoerceAtLeast(this int input, int minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static long CoerceAtLeast(this long input, long minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static float CoerceAtLeast(this float input, float minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static double CoerceAtLeast(this double input, double minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static decimal CoerceAtLeast(this decimal input, decimal minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static sbyte CoerceAtLeast(this sbyte input, sbyte minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static ushort CoerceAtLeast(this ushort input, ushort minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static uint CoerceAtLeast(this uint input, uint minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不小于指定的最小值。
+    /// Returns the input value if it is greater than or equal to the specified minimum value; otherwise, returns the
+    /// minimum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <returns>如果输入值小于最小值，则返回最小值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the minimum value.</param>
+    /// <param name="minValue">The minimum allowable value to which the input will be coerced if it is less than this value.</param>
+    /// <returns>The input value if it is greater than or equal to minValue; otherwise, minValue.</returns>
     public static ulong CoerceAtLeast(this ulong input, ulong minValue)
     {
         return input <= minValue ? minValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static byte CoerceAtMost(this byte input, byte maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static short CoerceAtMost(this short input, short maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static int CoerceAtMost(this int input, int maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static long CoerceAtMost(this long input, long maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static float CoerceAtMost(this float input, float maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static double CoerceAtMost(this double input, double maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static decimal CoerceAtMost(this decimal input, decimal maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static sbyte CoerceAtMost(this sbyte input, sbyte maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static ushort CoerceAtMost(this ushort input, ushort maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static uint CoerceAtMost(this uint input, uint maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 将输入值限制为不大于指定的最大值。
+    /// Returns the input value if it is less than or equal to the specified maximum value; otherwise, returns the
+    /// maximum value.
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <returns>如果输入值大于最大值，则返回最大值；否则返回输入值。</returns>
+    /// <param name="input">The value to compare against the maximum value.</param>
+    /// <param name="maxValue">The maximum allowable value. If the input exceeds this value, the method returns maxValue.</param>
+    /// <returns>The input value if it is less than or equal to maxValue; otherwise, maxValue.</returns>
     public static ulong CoerceAtMost(this ulong input, ulong maxValue)
     {
         return input >= maxValue ? maxValue : input;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static byte CoerceWhen(this byte trueValue, bool condition, byte falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static short CoerceWhen(this short trueValue, bool condition, short falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static int CoerceWhen(this int trueValue, bool condition, int falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static long CoerceWhen(this long trueValue, bool condition, long falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static float CoerceWhen(this float trueValue, bool condition, float falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static double CoerceWhen(this double trueValue, bool condition, double falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static decimal CoerceWhen(this decimal trueValue, bool condition, decimal falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static sbyte CoerceWhen(this sbyte trueValue, bool condition, sbyte falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static ushort CoerceWhen(this ushort trueValue, bool condition, ushort falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static uint CoerceWhen(this uint trueValue, bool condition, uint falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// 通过条件<paramref name="condition"/>来确定返回的是<paramref name="trueValue"/>(为<see langword="true"/>) 还是返回<paramref name="falseValue"/>(为<see langword="false"/>)
+    /// Returns one of two input values depending on the specified condition.
     /// </summary>
-    /// <param name="trueValue">输入值。</param>
-    /// <param name="condition"></param>
-    /// <param name="falseValue">不满足条件返回值。</param>
-    /// <returns>如果输入条件为真,则返回输入值<paramref name="trueValue"/> ；否则返回默认值<paramref name="falseValue"/>。</returns>
+    /// <param name="trueValue">The byte value to return if <paramref name="condition"/> is <see langword="true"/>.</param>
+    /// <param name="condition">A value indicating which byte value to return. If <see langword="true"/>, <paramref name="trueValue"/> is
+    /// returned; otherwise, <paramref name="falseValue"/> is returned.</param>
+    /// <param name="falseValue">The byte value to return if <paramref name="condition"/> is <see langword="false"/>.</param>
+    /// <returns>The value of <paramref name="trueValue"/> if <paramref name="condition"/> is <see langword="true"/>; otherwise,
+    /// the value of <paramref name="falseValue"/>.</returns>
     public static ulong CoerceWhen(this ulong trueValue, bool condition, ulong falseValue)
     {
         return condition ? trueValue : falseValue;
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this double input, double minValue, double maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -677,15 +786,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this float input, float minValue, float maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -694,15 +807,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this decimal input, decimal minValue, decimal maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -711,15 +828,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this int input, int minValue, int maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -728,15 +849,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this short input, short minValue, short maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -745,15 +870,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this byte input, byte minValue, byte maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -762,15 +891,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this sbyte input, sbyte minValue, sbyte maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -779,15 +912,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this ushort input, ushort minValue, ushort maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -796,15 +933,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    ///  <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this uint input, uint minValue, uint maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -813,15 +954,19 @@ public static partial class MathExtensions
     }
 
     /// <summary>
-    /// <para>判断 <paramref name="input"/> 是否在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内</para>
-    /// <para>方式 1: <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
-    /// <para>方式 2: <![CDATA[minValue < input && input < maxValue]]> </para>
+    /// Determines whether the specified value falls within the given range, with an option to include or exclude the
+    /// boundary values.
+    /// <para> 1 : <![CDATA[minValue <= input && input <= maxValue]]>   ( includeEquals == <see langword="true"/> ) </para>
+    /// <para> 2 : <![CDATA[minValue < input && input < maxValue]]> </para>
     /// </summary>
-    /// <param name="input">输入值。</param>
-    /// <param name="minValue">最小值。</param>
-    /// <param name="maxValue">最大值。</param>
-    /// <param name="includeEquals"></param>
-    /// <returns>如果<paramref name="input"/> 是在 [ <paramref name="minValue"/> , <paramref name="maxValue"/> ] 范围内，则返回 <see langword="true"/>;反之，则返回 <see langword="false"/></returns>
+    /// <remarks>If minValue is greater than maxValue, the method will return false for all input values. This
+    /// method is typically used to validate that a value is within an expected numeric interval.</remarks>
+    /// <param name="input">The value to test for inclusion within the specified range.</param>
+    /// <param name="minValue">The lower bound of the range.</param>
+    /// <param name="maxValue">The upper bound of the range.</param>
+    /// <param name="includeEquals">true to include the boundary values in the range comparison; otherwise, false to exclude them. The default is
+    /// true.</param>
+    /// <returns>true if the value is within the specified range according to the boundary inclusion setting; otherwise, false.</returns>
     public static bool VerifyIn(this ulong input, ulong minValue, ulong maxValue, bool includeEquals = true)
     {
         return includeEquals
@@ -935,16 +1080,16 @@ public static partial class MathExtensions
         return (float)Math.Round((double)value, decimals, mode);
     }
 
-    private static readonly char[] charArray = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-
     /// <summary>
-    /// 进制转换
+    /// Converts a non-negative decimal number to its string representation in the specified base.
     /// </summary>
-    /// <param name="decimalNumber">10进制任意数</param>
-    /// <param name="targetBase">任意进制（必须在 2~36之间）</param>
-    /// <returns></returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static string BaseConversion(int decimalNumber, int targetBase)
+    /// <remarks>The returned string uses uppercase letters A–Z for digit values 10 through 35. The method
+    /// does not handle negative numbers.</remarks>
+    /// <param name="decimalNumber">The non-negative decimal number to convert.</param>
+    /// <param name="targetBase">The base to convert to. Must be in the range 2 to 36, inclusive.</param>
+    /// <returns>A string representing the converted number in the specified base.</returns>
+    /// <exception cref="ArgumentException">Thrown if targetBase is less than 2 or greater than 36.</exception>
+    public static string BaseConversion(long decimalNumber, byte targetBase)
     {
         _ = targetBase is < 2 or > 36 ? throw new ArgumentException("target base must be 2 ~ 36") : 0;
 
@@ -952,13 +1097,13 @@ public static partial class MathExtensions
 
         return new string(chars);
 
-        static IEnumerable<char> Pick(int decimalNumber, int targetBase)
+        static IEnumerable<char> Pick(long decimalNumber, byte targetBase)
         {
-            int quotient = decimalNumber;
+            long quotient = decimalNumber;
 
             while (quotient > 0)
             {
-                int remainder = quotient % targetBase;
+                long remainder = quotient % targetBase;
 
                 quotient /= targetBase;
 

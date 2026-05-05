@@ -7,7 +7,7 @@ namespace System.Threading;
 /// Provides extension methods for retrieving task awaiters from task completion sources and collections of
 /// tasks. Supports awaiting individual tasks, arrays, and collections.
 /// </summary>
-public static class TaskExtensions
+public static class TaskEx
 {
     /// <summary>
     /// Retrieves an awaiter for the task associated with the provided task completion source.
@@ -16,11 +16,11 @@ public static class TaskExtensions
     /// <param name="taskCompletionSource">Used to obtain the task's awaiter for asynchronous operations.</param>
     /// <returns>An awaiter that allows for awaiting the completion of the task.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided task completion source is null.</exception>
-    public static TaskAwaiter<T> GetAwaiter<T>(this TaskCompletionSource<T> taskCompletionSource)
+    public static ConfiguredTaskAwaitable<T>.ConfiguredTaskAwaiter GetAwaiter<T>(this TaskCompletionSource<T> taskCompletionSource)
     {
         _ = taskCompletionSource ?? throw new ArgumentNullException(nameof(taskCompletionSource));
 
-        return taskCompletionSource.Task.GetAwaiter();
+        return taskCompletionSource.Task.ConfigureAwait(false).GetAwaiter();
     }
 
     /// <summary>
@@ -31,11 +31,11 @@ public static class TaskExtensions
     /// <param name="taskCompletionSources">An array of task completion sources to be awaited for their completion.</param>
     /// <returns>Returns a task awaiter for an array of results from the completed tasks.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided array of task completion sources is null.</exception>
-    public static TaskAwaiter<T[]> GetAwaiter<T>(this TaskCompletionSource<T>[] taskCompletionSources)
+    public static ConfiguredTaskAwaitable<T[]>.ConfiguredTaskAwaiter GetAwaiter<T>(this TaskCompletionSource<T>[] taskCompletionSources)
     {
         _ = taskCompletionSources ?? throw new ArgumentNullException(nameof(taskCompletionSources));
 
-        return Task.WhenAll(taskCompletionSources.Select(i => i.Task)).GetAwaiter();
+        return Task.WhenAll(taskCompletionSources.Select(i => i.Task)).ConfigureAwait(false).GetAwaiter();
     }
 
     /// <summary>
@@ -45,11 +45,11 @@ public static class TaskExtensions
     /// <param name="taskCompletionSources">A collection of task completion sources from which to await the completion of tasks.</param>
     /// <returns>An awaiter for a task that completes when all tasks in the collection have completed.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided collection of task completion sources is null.</exception>
-    public static TaskAwaiter<T[]> GetAwaiter<T>(this IEnumerable<TaskCompletionSource<T>> taskCompletionSources)
+    public static ConfiguredTaskAwaitable<T[]>.ConfiguredTaskAwaiter GetAwaiter<T>(this IEnumerable<TaskCompletionSource<T>> taskCompletionSources)
     {
         _ = taskCompletionSources ?? throw new ArgumentNullException(nameof(taskCompletionSources));
 
-        return Task.WhenAll(taskCompletionSources.Select(i => i.Task)).GetAwaiter();
+        return Task.WhenAll(taskCompletionSources.Select(i => i.Task)).ConfigureAwait(false).GetAwaiter();
     }
 
     /// <summary>
@@ -57,9 +57,9 @@ public static class TaskExtensions
     /// </summary>
     /// <param name="tasks"></param>
     /// <returns></returns>
-    public static TaskAwaiter GetAwaiter(this TimeSpan tasks)
+    public static ConfiguredTaskAwaitable.ConfiguredTaskAwaiter GetAwaiter(this TimeSpan tasks)
     {
-        return Task.Delay(tasks).GetAwaiter();
+        return Task.Delay(tasks).ConfigureAwait(false).GetAwaiter();
     }
 
     /// <summary>
@@ -68,11 +68,11 @@ public static class TaskExtensions
     /// <param name="tasks">The collection of tasks to be awaited for completion.</param>
     /// <returns>An awaiter that can be used to asynchronously wait for all tasks in the collection to complete.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the provided collection of tasks is null.</exception>
-    public static TaskAwaiter GetAwaiter(this IEnumerable<Task> tasks)
+    public static ConfiguredTaskAwaitable.ConfiguredTaskAwaiter GetAwaiter(this IEnumerable<Task> tasks)
     {
         _ = tasks ?? throw new ArgumentNullException(nameof(tasks));
 
-        return Task.WhenAll(tasks).GetAwaiter();
+        return Task.WhenAll(tasks).ConfigureAwait(false).GetAwaiter();
     }
 
     /// <summary>
@@ -82,10 +82,42 @@ public static class TaskExtensions
     /// <param name="tasks">A collection of tasks whose results will be awaited and combined into an array.</param>
     /// <returns>An awaiter that allows for asynchronous waiting on the completion of all tasks.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the collection of tasks is null.</exception>
-    public static TaskAwaiter<T[]> GetAwaiter<T>(this IEnumerable<Task<T>> tasks)
+    public static ConfiguredTaskAwaitable<T[]>.ConfiguredTaskAwaiter GetAwaiter<T>(this IEnumerable<Task<T>> tasks)
     {
         _ = tasks ?? throw new ArgumentNullException(nameof(tasks));
 
-        return Task.WhenAll(tasks).GetAwaiter();
+        return Task.WhenAll(tasks).ConfigureAwait(false).GetAwaiter();
+    }
+
+    /// <summary>
+    /// Attempts to asynchronously delay execution for the specified time interval, returning a value that indicates
+    /// whether the delay completed successfully or was canceled.
+    /// </summary>
+    /// <remarks>If the cancellation token is triggered before the delay completes, the method returns <see
+    /// langword="false"/> instead of throwing an exception. This method is useful for scenarios where you want to avoid
+    /// exception handling for canceled delays.</remarks>
+    /// <param name="timeSpan">The amount of time to delay before completing the task.</param>
+    /// <param name="token">A cancellation token that can be used to cancel the delay operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The result is <see langword="true"/> if the delay completed
+    /// successfully; otherwise, <see langword="false"/> if the operation was canceled or an error occurred.</returns>
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task<bool>
+#else
+    ValueTask<bool>
+#endif
+
+    SafeDelayAsync(TimeSpan timeSpan, CancellationToken token = default!)
+    {
+        try
+        {
+            await Task.Delay(timeSpan, token).ConfigureAwait(false);
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

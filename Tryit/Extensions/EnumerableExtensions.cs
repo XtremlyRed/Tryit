@@ -73,13 +73,14 @@ public static partial class EnumerableExtensions
     /// <returns>True if the collection is null or contains no elements; otherwise, false.</returns>
     public static bool IsNullOrEmpty<TSource>(this IEnumerable<TSource>? source)
     {
-        return source is null || (source is IList<TSource> array
-            ? array.Count == 0
-            : source is IReadOnlyCollection<TSource> @readonly
-                ? @readonly.Count == 0
-                : source is ICollection<TSource> collection
-                            ? collection.Count == 0
-                            : source is ICollection collection2 ? collection2.Count == 0 : source.Any() == false);
+        return source is null
+            || (
+                source is IList<TSource> array ? array.Count == 0
+                : source is IReadOnlyCollection<TSource> @readonly ? @readonly.Count == 0
+                : source is ICollection<TSource> collection ? collection.Count == 0
+                : source is ICollection collection2 ? collection2.Count == 0
+                : source.Any() == false
+            );
     }
 
     /// <summary>
@@ -90,13 +91,14 @@ public static partial class EnumerableExtensions
     /// <returns>True if the collection is not null and contains at least one element; otherwise, false.</returns>
     public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource>? source)
     {
-        return source is not null && (source is IList<TSource> array
-            ? array.Count != 0
-            : source is IReadOnlyCollection<TSource> @readonly
-                ? @readonly.Count != 0
-                : source is ICollection<TSource> collection
-                            ? collection.Count != 0
-                            : source is ICollection collection2 ? collection2.Count != 0 : source.Any());
+        return source is not null
+            && (
+                source is IList<TSource> array ? array.Count != 0
+                : source is IReadOnlyCollection<TSource> @readonly ? @readonly.Count != 0
+                : source is ICollection<TSource> collection ? collection.Count != 0
+                : source is ICollection collection2 ? collection2.Count != 0
+                : source.Any()
+            );
     }
 
     /// <summary>
@@ -865,9 +867,7 @@ public static partial class EnumerableExtensions
             return;
         }
 
-        while (source.TryTake(out _))
-        {
-        }
+        while (source.TryTake(out _)) { }
     }
 
     /// <summary>
@@ -921,11 +921,10 @@ public static partial class EnumerableExtensions
 
         if (source is IList<T> list2)
         {
-            //
-            return new ReadOnlyCollection<T>(list2);
+            return new ReadOnlyCollection<T>(list2); // Use the existing list directly
         }
 
-        return new ReadOnlyCollection<T>(source.ToArray());
+        return new ReadOnlyCollection<T>(source.ToArray()); // Create a new array to ensure immutability
     }
 
     /// <summary>
@@ -943,14 +942,110 @@ public static partial class EnumerableExtensions
 
         if (dict is IReadOnlyDictionary<TKey, TValue> read)
         {
-            return read;      //
+            return read; // If it's already a read-only dictionary, return it directly
         }
 
         if (dict is IDictionary<TKey, TValue> dics)
         {
-            return new ReadOnlyDictionary<TKey, TValue>(dics);      //
+            return new ReadOnlyDictionary<TKey, TValue>(dics); // Use the existing dictionary directly
         }
 
         return new ReadOnlyDictionary<TKey, TValue>(dict.ToDictionary(x => x.Key, x => x.Value));
+    }
+
+    /// <summary>
+    /// Retrieves the element at the specified index in the list, supporting negative indices to access elements from
+    /// the end.
+    /// </summary>
+    /// <remarks>Negative indices provide a convenient way to access elements from the end of the list,
+    /// similar to Python's list indexing. For example, an index of -1 returns the last element.</remarks>
+    /// <typeparam name="TSource">The type of elements in the source list.</typeparam>
+    /// <param name="sources">The list from which to retrieve the element. Cannot be null.</param>
+    /// <param name="index">The zero-based index of the element to retrieve. If negative, the index is counted from the end of the list
+    /// (e.g., -1 returns the last element).</param>
+    /// <returns>The element at the specified index in the list.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if sources is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if index is greater than or equal to the number of elements in the list, or if the negative index is less
+    /// than the negative count of the list.</exception>
+    public static TSource At<TSource>(this IList<TSource> sources, int index)
+    {
+        _ = sources ?? throw new ArgumentNullException(nameof(sources));
+
+        if (index >= 0)
+        {
+            _ = index >= sources.Count ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+            return sources[index];
+        }
+
+        var newIndex = index + sources.Count;
+
+        _ = (newIndex) < 0 ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+        return sources[newIndex];
+    }
+
+    /// <summary>
+    /// Retrieves the element at the specified index in the read-only list, supporting negative indices to access
+    /// elements from the end of the list.
+    /// </summary>
+    /// <remarks>Negative indices provide convenient access to elements from the end of the list, similar to
+    /// Python-style indexing. For example, an index of -1 returns the last element.</remarks>
+    /// <typeparam name="TSource">The type of elements in the source list.</typeparam>
+    /// <param name="sources">The read-only list from which to retrieve the element. Cannot be null.</param>
+    /// <param name="index">The zero-based index of the element to retrieve. If negative, the index is counted from the end of the list
+    /// (e.g., -1 refers to the last element).</param>
+    /// <returns>The element at the specified index in the source list.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if sources is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if index is greater than or equal to the number of elements in the list, or if a negative index refers to
+    /// a position before the start of the list.</exception>
+    public static TSource At<TSource>(this IReadOnlyList<TSource> sources, int index)
+    {
+        _ = sources ?? throw new ArgumentNullException(nameof(sources));
+
+        if (index >= 0)
+        {
+            _ = index >= sources.Count ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+            return sources[index];
+        }
+
+        var newIndex = index + sources.Count;
+
+        _ = (newIndex) < 0 ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+        return sources[newIndex];
+    }
+
+    /// <summary>
+    /// Returns the element at the specified index in the array. Supports negative indices to access elements from the
+    /// end of the array.
+    /// </summary>
+    /// <remarks>When a negative index is specified, the method counts backward from the end of the array. For
+    /// example, an index of -1 returns the last element, -2 returns the second-to-last element, and so on.</remarks>
+    /// <typeparam name="TSource">The type of the elements in the array.</typeparam>
+    /// <param name="sources">The array from which to retrieve the element. Cannot be null.</param>
+    /// <param name="index">The zero-based index of the element to retrieve. If negative, the index is counted from the end of the array
+    /// (e.g., -1 returns the last element).</param>
+    /// <returns>The element at the specified index in the array.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if sources is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if index is greater than or equal to the length of the array, or if the negative index is less than the
+    /// negative length of the array.</exception>
+    public static TSource At<TSource>(this TSource[] sources, int index)
+    {
+        _ = sources ?? throw new ArgumentNullException(nameof(sources));
+
+        if (index >= 0)
+        {
+            _ = index >= sources.Length ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+            return sources[index];
+        }
+
+        var newIndex = index + sources.Length;
+
+        _ = (newIndex) < 0 ? throw new ArgumentOutOfRangeException(nameof(index)) : 0;
+
+        return sources[newIndex];
     }
 }

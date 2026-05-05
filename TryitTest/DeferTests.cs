@@ -34,6 +34,8 @@ namespace TryitTest
         [TestMethod]
         public async Task Deferred_AsyncTask_InvokesTaskAfterDelay()
         {
+            await TimeSpan.FromSeconds(1);
+
             var invoked = false;
             var token = Defer
                 .Deferred(100)

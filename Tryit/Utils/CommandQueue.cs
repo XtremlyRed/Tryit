@@ -179,7 +179,7 @@ public class AsyncCommandQueue<T>
 /// - Uses an integer spin lock (`optFlag`) with <see cref="Interlocked.CompareExchange(ref int, int, int)"/>.
 /// - All mutation and selection operations are performed under the lock.
 /// </remarks>
-internal class CommandPacket<T>
+internal class CommandPacket<T> : List<T>
 {
     /// <summary>
     /// Spin-lock flag (0 = free, 1 = locked).
@@ -193,12 +193,6 @@ internal class CommandPacket<T>
     /// </summary>
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private int executeIndex = -1;
-
-    /// <summary>
-    /// Storage for continuous commands (round-robin).
-    /// </summary>
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private readonly List<T> continuousItems = new List<T>();
 
     /// <summary>
     /// Storage for one-time commands (FIFO).
@@ -249,16 +243,16 @@ internal class CommandPacket<T>
             }
 
             // Continuous commands fallback (round-robin).
-            if (continuousItems.Count > 0)
+            if (this.Count > 0)
             {
                 executeIndex++;
 
-                if (executeIndex >= continuousItems.Count)
+                if (executeIndex >= this.Count)
                 {
                     executeIndex = 0;
                 }
 
-                commandItem = continuousItems[executeIndex];
+                commandItem = this[executeIndex];
 
                 return true;
             }
@@ -362,7 +356,7 @@ internal class CommandPacket<T>
             }
             else if (commandItem.CommandType == CommandType.Continuous)
             {
-                continuousItems.Add(command);
+                this.Add(command);
                 Interlocked.Increment(ref commandCounter);
             }
         }
@@ -375,7 +369,7 @@ internal class CommandPacket<T>
             }
             else if (asyncCommandItem.CommandType == CommandType.Continuous)
             {
-                continuousItems.Add(command);
+                this.Add(command);
                 Interlocked.Increment(ref commandCounter);
             }
         }

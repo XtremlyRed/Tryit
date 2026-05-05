@@ -23,7 +23,7 @@ public static class XTimer
     internal static readonly ConcurrentDictionary<string, TimeAnchor> timeAnchorMaps = new();
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    static int lockFlag = 0;
+    private static int lockFlag = 0;
 
     /// <summary>
     /// Creates a new instance of the TimeAnchor class.
@@ -66,12 +66,7 @@ public static class XTimer
                 spinWait.SpinOnce();
             }
 
-            if (timeAnchorMaps.ContainsKey(timeAnchorToken))
-            {
-                throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' already exists.");
-            }
-
-            return timeAnchorMaps[timeAnchorToken] = timeAnchor ?? new TimeAnchor();
+            return timeAnchorMaps.ContainsKey(timeAnchorToken) ? throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' already exists.") : (timeAnchorMaps[timeAnchorToken] = timeAnchor ?? new TimeAnchor());
         }
         finally
         {
@@ -101,12 +96,7 @@ public static class XTimer
                 spinWait.SpinOnce();
             }
 
-            if (timeAnchorMaps.TryRemove(timeAnchorToken, out var timeAnchor) == false)
-            {
-                throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' does not exist.");
-            }
-
-            return timeAnchor;
+            return timeAnchorMaps.TryRemove(timeAnchorToken, out TimeAnchor timeAnchor) == false ? throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' does not exist.") : timeAnchor;
         }
         finally
         {
@@ -123,6 +113,15 @@ public static class XTimer
 /// and thread-safe.</remarks>
 public readonly struct TimeAnchor
 {
+    /// <summary>
+    /// Creates and starts a new time anchor instance representing the current point in time.
+    /// </summary>
+    /// <returns>A new <see cref="TimeAnchor"/> instance initialized to the current time.</returns>
+    public static TimeAnchor StartNew()
+    {
+        return new TimeAnchor();
+    }
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private readonly long localTicks = XTimer.GLOBAL_STOP_WATCH.ElapsedTicks;
 
@@ -160,6 +159,16 @@ public readonly struct TimeDecayAnchor
     private readonly long decayMilliseconds;
 
     /// <summary>
+    /// Creates a new instance of the TimeDecayAnchor class with the specified decay duration.
+    /// </summary>
+    /// <param name="decayMilliseconds">The decay duration, in milliseconds, to be used by the anchor. Must be a non-negative value.</param>
+    /// <returns>A new TimeDecayAnchor instance configured with the specified decay duration.</returns>
+    public static TimeDecayAnchor StartNew(long decayMilliseconds)
+    {
+        return new TimeDecayAnchor(decayMilliseconds);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the TimeDecayAnchor class with the specified decay duration in milliseconds.
     /// </summary>
     /// <param name="decayMilliseconds">The decay duration, in milliseconds, used to control the rate at which values decay over time. Must be greater
@@ -186,7 +195,7 @@ public readonly struct TimeDecayAnchor
     /// Gets the number of milliseconds remaining before the decay period elapses.
     /// </summary>
     /// <remarks>Returns zero if the decay period has already elapsed.</remarks>
-    public long RemainingMilliseconds => (Math.Max(0, decayMilliseconds - ElapsedMilliseconds));
+    public long RemainingMilliseconds => Math.Max(0, decayMilliseconds - ElapsedMilliseconds);
 
     /// <summary>
     /// Gets the elapsed time since the timer was started.
