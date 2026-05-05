@@ -114,20 +114,20 @@ public class XTimerTests
     [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void SetDecayAnchor_WithZeroMilliseconds_ShouldThrow()
     {
-        _ = XTimer.SetDecayAnchor(0);
+        _ = XTimer.SetCountdownAnchor(0);
     }
 
     [TestMethod]
     [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void SetDecayAnchor_WithNegativeMilliseconds_ShouldThrow()
     {
-        _ = XTimer.SetDecayAnchor(-1);
+        _ = XTimer.SetCountdownAnchor(-1);
     }
 
     [TestMethod]
     public void SetDecayAnchor_WithPositiveMilliseconds_ShouldReturnValidDecayAnchor()
     {
-        var decay = XTimer.SetDecayAnchor(100);
+        var decay = XTimer.SetCountdownAnchor(100);
 
         Assert.IsTrue(decay.Elapsed >= TimeSpan.Zero);
         Assert.IsTrue(decay.ElapsedMilliseconds >= 0);

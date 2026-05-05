@@ -35,13 +35,13 @@ public static class XTimer
     }
 
     /// <summary>
-    /// Creates a new time decay anchor with the specified decay duration in milliseconds.
+    /// Creates a new time countdown anchor with the specified countdown duration in milliseconds.
     /// </summary>
-    /// <param name="decayMilliseconds">The decay duration, in milliseconds, to be used for the time decay anchor. Must be a non-negative value.</param>
-    /// <returns>A new instance of <see cref="TimeDecayAnchor"/> initialized with the specified decay duration.</returns>
-    public static TimeDecayAnchor SetDecayAnchor(long decayMilliseconds)
+    /// <param name="countdownMilliseconds">The countdown duration, in milliseconds, to be used for the time countdown anchor. Must be a non-negative value.</param>
+    /// <returns>A new instance of <see cref="CountdownTimeAnchor"/> initialized with the specified countdown duration.</returns>
+    public static CountdownTimeAnchor SetCountdownAnchor(long countdownMilliseconds)
     {
-        return new TimeDecayAnchor(decayMilliseconds);
+        return new CountdownTimeAnchor(countdownMilliseconds);
     }
 
     /// <summary>
@@ -150,38 +150,38 @@ public readonly struct TimeAnchor
 /// <remarks>Use this struct to measure how much time has passed or remains before a specified decay duration
 /// elapses. It is useful for scenarios where time-based expiration or decay logic is required, such as cache
 /// invalidation or time-limited operations. The struct is immutable and thread-safe.</remarks>
-public readonly struct TimeDecayAnchor
+public readonly struct CountdownTimeAnchor
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private readonly long localTicks = XTimer.GLOBAL_STOP_WATCH.ElapsedTicks;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private readonly long decayMilliseconds;
+    private readonly long countdownMilliseconds;
 
     /// <summary>
     /// Creates a new instance of the TimeDecayAnchor class with the specified decay duration.
     /// </summary>
     /// <param name="decayMilliseconds">The decay duration, in milliseconds, to be used by the anchor. Must be a non-negative value.</param>
     /// <returns>A new TimeDecayAnchor instance configured with the specified decay duration.</returns>
-    public static TimeDecayAnchor StartNew(long decayMilliseconds)
+    public static CountdownTimeAnchor StartNew(long decayMilliseconds)
     {
-        return new TimeDecayAnchor(decayMilliseconds);
+        return new CountdownTimeAnchor(decayMilliseconds);
     }
 
     /// <summary>
-    /// Initializes a new instance of the TimeDecayAnchor class with the specified decay duration in milliseconds.
+    /// Initializes a new instance of the CountdownTimeAnchor class with the specified countdown duration in milliseconds.
     /// </summary>
-    /// <param name="decayMilliseconds">The decay duration, in milliseconds, used to control the rate at which values decay over time. Must be greater
+    /// <param name="countdownMilliseconds">The countdown duration, in milliseconds, used to control the rate at which values countdown over time. Must be greater
     /// than zero.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if decayMilliseconds is less than or equal to zero.</exception>
-    public TimeDecayAnchor(long decayMilliseconds)
+    /// <exception cref="ArgumentOutOfRangeException">Thrown if countdownMilliseconds is less than or equal to zero.</exception>
+    public CountdownTimeAnchor(long countdownMilliseconds)
     {
-        if (decayMilliseconds <= 0)
+        if (countdownMilliseconds <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(decayMilliseconds), "Elapsed milliseconds must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(countdownMilliseconds), "Elapsed milliseconds must be greater than zero.");
         }
 
-        this.decayMilliseconds = decayMilliseconds;
+        this.countdownMilliseconds = countdownMilliseconds;
     }
 
     /// <summary>
@@ -189,13 +189,13 @@ public readonly struct TimeDecayAnchor
     /// </summary>
     /// <remarks>If the decay period has already elapsed, the returned value is zero. This property can be
     /// used to determine how much time is left before an associated operation or state expires.</remarks>
-    public TimeSpan Remaining => TimeSpan.FromMilliseconds(Math.Max(0, decayMilliseconds - ElapsedMilliseconds));
+    public TimeSpan Remaining => TimeSpan.FromMilliseconds(Math.Max(0, countdownMilliseconds - ElapsedMilliseconds));
 
     /// <summary>
     /// Gets the number of milliseconds remaining before the decay period elapses.
     /// </summary>
     /// <remarks>Returns zero if the decay period has already elapsed.</remarks>
-    public long RemainingMilliseconds => Math.Max(0, decayMilliseconds - ElapsedMilliseconds);
+    public long RemainingMilliseconds => Math.Max(0, countdownMilliseconds - ElapsedMilliseconds);
 
     /// <summary>
     /// Gets the elapsed time since the timer was started.
