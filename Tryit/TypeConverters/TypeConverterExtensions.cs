@@ -36,7 +36,7 @@ public static class TypeConverterExtensions
     /// <param name="from">The object that is to be converted to the specified type.</param>
     /// <returns>The converted value of the specified type if the conversion is successful.</returns>
     /// <exception cref="InvalidCastException">Thrown when the conversion to the specified type fails.</exception>
-    public static To ConvertTo<To>(this object? from)
+    public static To ConvertTo<To>(object? from)
     {
         if (from is To to)
         {
@@ -59,9 +59,8 @@ public static class TypeConverterExtensions
     /// <returns>The converted object of the specified type.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the object to convert is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a type converter for the specified conversion is not registered.</exception>
-    public static object ConvertTo(this object? from, Type toType)
+    public static object ConvertTo(object? from, Type toType)
     {
-      
         try
         {
             if (from is IConvertible convertible && typeCodeNames.Contains(toType.Name))
@@ -75,7 +74,6 @@ public static class TypeConverterExtensions
             }
 
             Type fromType = from?.GetType() ?? throw new ArgumentNullException(nameof(from));
-
 
             if (typeConvertMaps.TryGetValue(fromType, out ConcurrentDictionary<Type, TypeConverter>? fromTypeConverterStorages) == false)
             {
@@ -93,7 +91,6 @@ public static class TypeConverterExtensions
             {
                 return toTypeConverter.ConvertFrom(from)!;
             }
-
         }
         catch (FormatException)
         {

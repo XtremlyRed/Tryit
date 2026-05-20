@@ -32,7 +32,7 @@ public class FolderTests
         var path = @"C:\Test";
 
         // Act
-        Folder folder1 = Folder.From(path);
+        Folder folder1 = (path);
         Folder folder2 = path;
 
         // Assert
@@ -45,7 +45,7 @@ public class FolderTests
     {
         // Arrange
         var initialPath = @"C:\Users\Test";
-        var folder = Folder.From(initialPath);
+        Folder folder = (initialPath);
         var segment1 = "Documents";
         var segment2 = "MyProject";
         var expected = Path.Combine(initialPath, segment1, segment2);
@@ -78,7 +78,7 @@ public class FolderTests
     public void Combine_NullPaths_ThrowsArgumentNullException()
     {
         // Arrange
-        var folder = Folder.From(@"C:\Temp");
+        Folder folder = (@"C:\Temp");
 
         // Act
         _ = folder.Combine(null!);
@@ -89,7 +89,7 @@ public class FolderTests
     public void Combine_EmptyPaths_ThrowsArgumentNullException()
     {
         // Arrange
-        var folder = Folder.From(@"C:\Temp");
+        Folder folder = (@"C:\Temp");
 
         // Act
         _ = folder.Combine();
@@ -140,7 +140,7 @@ public class FolderTests
     public void TryCreateFolder_CreatesDirectoryWhenNotExists()
     {
         // Arrange
-        var folder = new Folder(_tempTestFolder);
+        Folder folder = (_tempTestFolder);
         Assert.IsFalse(Directory.Exists(_tempTestFolder), "Pre-condition: Directory should not exist.");
 
         // Act

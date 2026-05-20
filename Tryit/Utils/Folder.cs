@@ -260,16 +260,6 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
         this.folder = folder;
     }
 
-    /// <summary>
-    /// Creates a new instance of the Folder class from the specified folder path.
-    /// </summary>
-    /// <param name="folder">The path of the folder to represent. Cannot be null or empty.</param>
-    /// <returns>A Folder instance representing the specified folder path.</returns>
-    public static Folder From(string folder)
-    {
-        return new Folder(folder);
-    }
-
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private readonly string folder;
 
@@ -287,13 +277,9 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
             throw new ArgumentNullException(nameof(paths));
         }
 
-        var path = new string[paths.Length + 1];
+        string[] newPaths = [folder, .. paths];
 
-        path[0] = folder;
-
-        Array.Copy(paths, 0, path, 1, paths.Length);
-
-        return new Folder(Path.Combine(path));
+        return new Folder(Path.Combine(newPaths));
     }
 
     /// <summary>
@@ -369,7 +355,7 @@ public readonly struct Folder : IEquatable<object>, IEquatable<Folder>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override string ToString()
     {
-        return folder;
+        return this;
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ public class TypeConverterExtensionsTests
         int source = 42;
 
         // Act
-        int result = source.ConvertTo<int>();
+        int result = TypeConverterExtensions.ConvertTo<int>(source);
 
         // Assert
         Assert.AreEqual(source, result, "Should return original value when types match");
@@ -28,7 +28,7 @@ public class TypeConverterExtensionsTests
         string source = "123";
 
         // Act
-        int result = source.ConvertTo<int>();
+        int result = TypeConverterExtensions.ConvertTo<int>(source);
 
         // Assert
         Assert.AreEqual(123, result, "Should convert string to int correctly");
@@ -42,7 +42,7 @@ public class TypeConverterExtensionsTests
         string source = "not a number";
 
         // Act
-        source.ConvertTo<int>();
+        TypeConverterExtensions.ConvertTo<int>(source);
     }
 
     [TestMethod]
@@ -53,7 +53,7 @@ public class TypeConverterExtensionsTests
         TypeConverterExtensions.ConvertRegister<SourceType, TargetType>(s => new TargetType { Value = s.Value });
 
         // Act
-        var result = source.ConvertTo<TargetType>();
+        var result = TypeConverterExtensions.ConvertTo<TargetType>(source);
 
         // Assert
         Assert.AreEqual(source.Value, result.Value, "Custom converter should properly convert values");
@@ -67,7 +67,7 @@ public class TypeConverterExtensionsTests
         object? source = null;
 
         // Act
-        source.ConvertTo<string>();
+        TypeConverterExtensions.ConvertTo<string>(source);
     }
 
     [TestMethod]
@@ -78,8 +78,8 @@ public class TypeConverterExtensionsTests
         TypeConverterExtensions.ConvertRegister<string, double>(s => double.Parse(s));
 
         // Act
-        string stringResult = 42.ConvertTo<string>();
-        double doubleResult = stringResult.ConvertTo<double>();
+        string stringResult = TypeConverterExtensions.ConvertTo<string>(42);
+        double doubleResult = TypeConverterExtensions.ConvertTo<double>(stringResult);
 
         // Assert
         Assert.AreEqual("42", stringResult, "First conversion should work");
@@ -103,7 +103,7 @@ public class TypeConverterExtensionsTests
             {
                 try
                 {
-                    string result = index.ConvertTo<string>();
+                    string result = TypeConverterExtensions.ConvertTo<string>(index);
                     results[index] = result == index.ToString();
                 }
                 catch
