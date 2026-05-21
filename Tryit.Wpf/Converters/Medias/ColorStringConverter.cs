@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using ColorConverter = System.Windows.Media.ColorConverter;
 
 namespace Tryit.Wpf;
 

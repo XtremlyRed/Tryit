@@ -37,6 +37,102 @@ public class XTimerTests
     }
 
     [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_ImmediatelyAfterCreation_ShouldBeNonNegative()
+    {
+        var anchor = XTimer.SetAnchor();
+
+        Assert.IsTrue(anchor.ElapsedMilliseconds >= 0);
+    }
+
+    [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_AfterDelay_ShouldBeGreaterThanZero()
+    {
+        var anchor = XTimer.SetAnchor();
+
+        Thread.Sleep(30);
+
+        Assert.IsTrue(anchor.ElapsedMilliseconds > 0, $"Expected elapsed milliseconds to be greater than zero after delay, but got {anchor.ElapsedMilliseconds}.");
+    }
+
+    [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_ShouldBeMonotonic()
+    {
+        var anchor = XTimer.SetAnchor();
+
+        long first = anchor.ElapsedMilliseconds;
+        Thread.Sleep(15);
+        long second = anchor.ElapsedMilliseconds;
+        Thread.Sleep(15);
+        long third = anchor.ElapsedMilliseconds;
+
+        Assert.IsTrue(second >= first, $"Expected second value to be >= first. first={first}, second={second}.");
+        Assert.IsTrue(third >= second, $"Expected third value to be >= second. second={second}, third={third}.");
+    }
+
+    [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_ShouldRoughlyMatchElapsedTotalMilliseconds()
+    {
+        var anchor = XTimer.SetAnchor();
+
+        Thread.Sleep(40);
+
+        long elapsedMilliseconds = anchor.ElapsedMilliseconds;
+        double elapsedFromTimeSpan = anchor.Elapsed.TotalMilliseconds;
+
+        Assert.IsTrue(
+            Math.Abs(elapsedMilliseconds - elapsedFromTimeSpan) <= 20,
+            $"Expected ElapsedMilliseconds ({elapsedMilliseconds}) to roughly match Elapsed.TotalMilliseconds ({elapsedFromTimeSpan})."
+        );
+    }
+
+    [TestMethod]
+    public void TimeAnchor_StartNew_ElapsedMilliseconds_AfterDelay_ShouldBeGreaterThanZero()
+    {
+        var anchor = TimeAnchor.StartNew();
+
+        Thread.Sleep(30);
+
+        Assert.IsTrue(anchor.ElapsedMilliseconds > 0, $"Expected elapsed milliseconds to be greater than zero after delay, but got {anchor.ElapsedMilliseconds}.");
+    }
+
+    [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_OlderAnchor_ShouldBeGreaterThanNewerAnchor()
+    {
+        var older = XTimer.SetAnchor();
+        Thread.Sleep(25);
+        var newer = XTimer.SetAnchor();
+        Thread.Sleep(15);
+
+        Assert.IsTrue(
+            older.ElapsedMilliseconds > newer.ElapsedMilliseconds,
+            $"Expected older anchor elapsed milliseconds ({older.ElapsedMilliseconds}) to be greater than newer anchor ({newer.ElapsedMilliseconds})."
+        );
+    }
+
+    [TestMethod]
+    public void TimeAnchor_ElapsedMilliseconds_FromRetrievedAnchor_ShouldContinueFromOriginalAnchorTime()
+    {
+        var token = NewToken();
+        var original = XTimer.SetAnchor();
+
+        try
+        {
+            Thread.Sleep(20);
+            _ = XTimer.SetAnchor(token, original);
+            Thread.Sleep(20);
+
+            var retrieved = XTimer.GetAnchor(token);
+
+            Assert.IsTrue(retrieved.ElapsedMilliseconds >= original.ElapsedMilliseconds - 10,
+                $"Expected retrieved elapsed milliseconds ({retrieved.ElapsedMilliseconds}) to reflect original anchor lifetime ({original.ElapsedMilliseconds}).");
+        }
+        finally
+        {
+            CleanupToken(token);
+        }
+    }
+
+    [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
     public void SetAnchor_WithNullToken_ShouldThrow()
     {

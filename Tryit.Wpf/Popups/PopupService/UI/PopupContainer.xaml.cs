@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Tryit.Wpf;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace Tryit.Wpf.Services.PopupService;
 

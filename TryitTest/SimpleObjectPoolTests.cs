@@ -72,15 +72,13 @@ public class SimpleObjectPoolTests
     {
         var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
 
-        Assert.ThrowsException<ArgumentNullException>(() => pool.Return(null!));
+        Assert.ThrowsException<ArgumentNullException>(() => pool.Return((PooledItem)null!));
     }
 
     [TestMethod]
     public void Return_ShouldInvokeResetCallback()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(
-            () => new PooledItem(),
-            x => x.Value = 0);
+        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem(), x => x.Value = 0);
 
         var item = new PooledItem { Value = 99 };
         pool.Return(item);
@@ -99,7 +97,8 @@ public class SimpleObjectPoolTests
                 factoryCount++;
                 return new PooledItem();
             },
-            _ => throw new InvalidOperationException("reset failed"));
+            _ => throw new InvalidOperationException("reset failed")
+        );
 
         var ex = Assert.ThrowsException<InvalidOperationException>(() => pool.Return(new PooledItem()));
         Assert.AreEqual("reset failed", ex.Message);
@@ -278,7 +277,8 @@ public class SimpleObjectPoolTests
                     throwNow = false;
                     throw new InvalidOperationException("once");
                 }
-            });
+            }
+        );
 
         Assert.ThrowsException<InvalidOperationException>(() => pool.Return(new PooledItem()));
 

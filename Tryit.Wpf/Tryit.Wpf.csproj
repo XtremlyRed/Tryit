@@ -9,6 +9,7 @@
 		</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>true</UseWPF>
     <LangVersion>14</LangVersion>
     <PackageId>Tryit.Wpf</PackageId>

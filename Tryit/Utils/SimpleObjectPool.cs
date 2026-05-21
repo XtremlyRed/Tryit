@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace Tryit;
@@ -21,7 +19,7 @@ public static class SimpleObjectPool
     /// The reset callback clears the builder before it is re-enqueued.
     /// The default max pool size is configured to avoid unbounded growth.
     /// </remarks>
-    static readonly SimpleObjectPool<StringBuilder> stringBuilderPool = SimpleObjectPool<StringBuilder>.Create(() => new StringBuilder(), sb => sb.Clear(), 85000);
+    private static readonly SimpleObjectPool<StringBuilder> stringBuilderPool = SimpleObjectPool<StringBuilder>.Create(() => new StringBuilder(), sb => sb.Clear(), ushort.MaxValue);
 
     /// <summary>
     /// Creates a new <see cref="SimpleObjectPool{T}"/> instance.
@@ -35,7 +33,7 @@ public static class SimpleObjectPool
     /// </param>
     /// <returns>A new instance of <see cref="SimpleObjectPool{T}"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is <see langword="null"/>.</exception>
-    public static SimpleObjectPool<T> Create<T>(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = 85000)
+    public static SimpleObjectPool<T> Create<T>(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
     {
         return SimpleObjectPool<T>.Create(factory, resetCallback, maxPoolSize);
     }
@@ -47,7 +45,7 @@ public static class SimpleObjectPool
     /// <param name="resetCallback">Optional callback used to reset state when an instance is returned.</param>
     /// <param name="maxPoolSize">Maximum number of objects allowed to remain cached in the internal queue.</param>
     /// <returns>A new instance of <see cref="SimpleObjectPool{T}"/>.</returns>
-    public static SimpleObjectPool<T> Create<T>(Action<T>? resetCallback = null, int maxPoolSize = 85000)
+    public static SimpleObjectPool<T> Create<T>(Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
         where T : new()
     {
         return SimpleObjectPool<T>.Create(() => new T(), resetCallback, maxPoolSize);
@@ -73,7 +71,7 @@ public static class SimpleObjectPool
 /// This pool exposes two core operations:
 /// <list type="bullet">
 /// <item><description><see cref="Rent"/>: obtains an instance from the pool, or creates one when the pool is empty.</description></item>
-/// <item><description><see cref="Return"/>: returns an instance back to the pool for future reuse.</description></item>
+/// <item><description><see cref="SimpleObjectPool{T}.Return(T)"/>: returns an instance back to the pool for future reuse.</description></item>
 /// </list>
 /// Use <see cref="Create"/> to build a default queue-based implementation.
 /// </remarks>
@@ -99,7 +97,7 @@ public abstract class SimpleObjectPool<T>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="factory"/> is <see langword="null"/>.
     /// </exception>
-    public static SimpleObjectPool<T> Create(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = 85000)
+    public static SimpleObjectPool<T> Create(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
     {
         _ = factory ?? throw new ArgumentNullException(nameof(factory));
         return new DefaultSimpleObjectPool(factory, resetCallback, maxPoolSize);
@@ -131,25 +129,25 @@ public abstract class SimpleObjectPool<T>
         private readonly int maxPoolSize;
 
         /// <summary>
-        /// FIFO storage for returned objects.
+        /// LIFO storage for returned objects.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Queue<T> queue = new Queue<T>();
+        private readonly Stack<T> stack = new Stack<T>();
 
         /// <summary>
         /// Spin-lock flag: 0 means unlocked, 1 means locked.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        int flag = 0;
+        private int flag = 0;
 
         /// <summary>
         /// Initializes the default pool implementation.
         /// </summary>
         /// <param name="factory">Factory function used to create objects on cache miss.</param>
         /// <param name="resetCallback">Optional callback used to reset returned instances.</param>
-        /// <param name="maxPoolSize">Maximum number of cached instances allowed in <see cref="queue"/>.</param>
+        /// <param name="maxPoolSize">Maximum number of cached instances allowed in <see cref="stack"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is <see langword="null"/>.</exception>
-        internal DefaultSimpleObjectPool(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = 85000)
+        internal DefaultSimpleObjectPool(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
         {
             this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
             this.resetCallback = resetCallback;
@@ -173,40 +171,43 @@ public abstract class SimpleObjectPool<T>
 
             bool found = false;
 
-            try
+            if (stack.Count > 0)
             {
-                SpinWait spinWait = default;
-
-                // Acquire exclusive access to the queue.
-                while (Interlocked.CompareExchange(ref flag, 1, 0) != 0)
+                try
                 {
-                    // Perform adaptive spinning while waiting for the lock.
-                    spinWait.SpinOnce();
+                    SpinWait spinWait = default;
+
+                    // Acquire exclusive access to the queue.
+                    while (Interlocked.CompareExchange(ref flag, 1, 0) != 0)
+                    {
+                        // Perform adaptive spinning while waiting for the lock.
+                        spinWait.SpinOnce();
+                    }
+
+                    // Check if the pool has exceeded its maximum size before allowing more items to be added.
+                    if (stack.Count > maxPoolSize)
+                    {
+                        throw new InvalidOperationException($"The pool has exceeded its maximum size of {maxPoolSize} items.");
+                    }
+
+                    if (stack.Count > 0)
+                    {
+                        // Fast path: reuse an existing instance from the pool.
+                        item = stack.Pop();
+                        found = true;
+                    }
+                }
+                finally
+                {
+                    // Always release the lock, even if dequeue throws unexpectedly.
+
+                    Interlocked.CompareExchange(ref flag, 0, 1);
                 }
 
-                // Check if the pool has exceeded its maximum size before allowing more items to be added.
-                if (queue.Count > maxPoolSize)
+                if (found)
                 {
-                    throw new InvalidOperationException($"The pool has exceeded its maximum size of {maxPoolSize} items.");
+                    return item!;
                 }
-
-                if (queue.Count > 0)
-                {
-                    // Fast path: reuse an existing instance from the pool.
-                    item = queue.Dequeue();
-                    found = true;
-                }
-            }
-            finally
-            {
-                // Always release the lock, even if dequeue throws unexpectedly.
-
-                Interlocked.CompareExchange(ref flag, 0, 1);
-            }
-
-            if (found)
-            {
-                return item!;
             }
 
             // Slow path: create a new instance outside the lock.
@@ -242,8 +243,61 @@ public abstract class SimpleObjectPool<T>
                     spinWait.SpinOnce();
                 }
 
-                // Return the instance to the reuse queue.
-                queue.Enqueue(item);
+                // Return the instance to the reuse stack.
+                stack.Push(item);
+            }
+            finally
+            {
+                // Always release the lock.
+                Interlocked.CompareExchange(ref flag, 0, 1);
+            }
+        }
+
+        /// <summary>
+        /// Returns a collection of objects to the pool for later reuse.
+        /// </summary>
+        /// <param name="items">The collection of object instances to return.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="items"/> is <see langword="null"/>.</exception>
+        public override void Return(params IEnumerable<T> items)
+        {
+            if (items is null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            using IEnumerator<T> enumerator = items.GetEnumerator(); // Get an enumerator for the input collection.
+
+            if (resetCallback is not null) // If a reset callback is provided, we need to execute it for each item before returning them to the pool.
+            {
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is not null) // Only process non-null items to avoid exceptions in the reset callback.
+                    {
+                        resetCallback.Invoke(enumerator.Current); // Reset the state of the item before returning it to the pool.
+                    }
+                }
+
+                enumerator.Reset();
+            }
+
+            try
+            {
+                SpinWait spinWait = default;
+
+                // Acquire exclusive access to the queue.
+                while (Interlocked.CompareExchange(ref flag, 1, 0) != 0)
+                {
+                    // Perform adaptive spinning while waiting for the lock.
+                    spinWait.SpinOnce();
+                }
+
+                while (enumerator.MoveNext())
+                {
+                    if (enumerator.Current is not null)
+                    {
+                        stack.Push(enumerator.Current);
+                    }
+                }
             }
             finally
             {
@@ -264,4 +318,10 @@ public abstract class SimpleObjectPool<T>
     /// </summary>
     /// <param name="item">The object to return.</param>
     public abstract void Return(T item);
+
+    /// <summary>
+    /// Returns the specified collections of items.
+    /// </summary>
+    /// <param name="items">Collections of items to return.</param>
+    public abstract void Return(params IEnumerable<T> items);
 }

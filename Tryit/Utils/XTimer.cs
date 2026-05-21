@@ -14,7 +14,7 @@ namespace Tryit;
 public static class XTimer
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    internal static long FrequencyRato = 1000 / Stopwatch.Frequency;
+    internal static double FrequencyRato = ((double)TimeSpan.TicksPerSecond / Stopwatch.Frequency / TimeSpan.TicksPerMillisecond);
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     internal static readonly Stopwatch GLOBAL_STOP_WATCH = Stopwatch.StartNew();
@@ -66,7 +66,13 @@ public static class XTimer
                 spinWait.SpinOnce();
             }
 
-            return timeAnchorMaps.ContainsKey(timeAnchorToken) ? throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' already exists.") : (timeAnchorMaps[timeAnchorToken] = timeAnchor ?? new TimeAnchor());
+            if (timeAnchorMaps.ContainsKey(timeAnchorToken))
+            {
+                throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' already exists.");
+                // This check is necessary to prevent overwriting an existing time anchor, which could lead to unexpected behavior when retrieving anchors by token.
+            }
+
+            return (timeAnchorMaps[timeAnchorToken] = timeAnchor ?? new TimeAnchor());
         }
         finally
         {
@@ -96,7 +102,12 @@ public static class XTimer
                 spinWait.SpinOnce();
             }
 
-            return timeAnchorMaps.TryRemove(timeAnchorToken, out TimeAnchor timeAnchor) == false ? throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' does not exist.") : timeAnchor;
+            if (timeAnchorMaps.TryRemove(timeAnchorToken, out TimeAnchor timeAnchor) == false)
+            {
+                throw new InvalidOperationException($"Time anchor with token '{timeAnchorToken}' does not exist.");
+                // This check is necessary to ensure that the method behaves predictably when attempting to retrieve a time anchor that has not been set or has already been retrieved and removed.
+            }
+            return timeAnchor;
         }
         finally
         {
@@ -113,6 +124,9 @@ public static class XTimer
 /// and thread-safe.</remarks>
 public readonly struct TimeAnchor
 {
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private readonly long anchorTicks = XTimer.GLOBAL_STOP_WATCH.ElapsedTicks;
+
     /// <summary>
     /// Creates and starts a new time anchor instance representing the current point in time.
     /// </summary>
@@ -122,9 +136,6 @@ public readonly struct TimeAnchor
         return new TimeAnchor();
     }
 
-    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private readonly long localTicks = XTimer.GLOBAL_STOP_WATCH.ElapsedTicks;
-
     /// <summary>
     /// Initializes a new instance of the TimeAnchor class.
     /// </summary>
@@ -133,7 +144,7 @@ public readonly struct TimeAnchor
     /// <summary>
     /// Gets the elapsed time since the timer was started.
     /// </summary>
-    public TimeSpan Elapsed => TimeSpan.FromTicks(XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - localTicks);
+    public TimeSpan Elapsed => TimeSpan.FromTicks(XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - anchorTicks);
 
     /// <summary>
     /// Gets the number of elapsed milliseconds since the timer was started.
@@ -141,7 +152,7 @@ public readonly struct TimeAnchor
     /// <remarks>This value is calculated based on the difference in stopwatch ticks and may be affected by
     /// the timer's resolution. The result reflects the elapsed time as measured by the underlying timer
     /// implementation.</remarks>
-    public long ElapsedMilliseconds => (XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - localTicks) * XTimer.FrequencyRato;
+    public long ElapsedMilliseconds => (long)((XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - anchorTicks) * XTimer.FrequencyRato);
 }
 
 /// <summary>
@@ -208,5 +219,5 @@ public readonly struct CountdownTimeAnchor
     /// <remarks>This value is calculated based on the underlying timer's tick count and may be affected by
     /// the timer's resolution. The returned value represents the elapsed time in milliseconds as a 64-bit
     /// integer.</remarks>
-    public long ElapsedMilliseconds => (XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - localTicks) * XTimer.FrequencyRato;
+    public long ElapsedMilliseconds => (long)((XTimer.GLOBAL_STOP_WATCH.ElapsedTicks - localTicks) * XTimer.FrequencyRato);
 }

@@ -362,8 +362,7 @@ public static partial class EnumerableExtensions
             int index = 0;
             foreach (Target item in source)
             {
-                index++;
-                action(item, index);
+                action(item, ++index);
             }
         }
     }
@@ -440,8 +439,7 @@ public static partial class EnumerableExtensions
             int index = 0;
             foreach (Target item in source)
             {
-                index++;
-                await action(item, index);
+                await action(item, ++index);
             }
         }
     }
@@ -495,6 +493,7 @@ public static partial class EnumerableExtensions
 
             return;
         }
+
         int index = 0;
         foreach (object? item in source)
         {
@@ -672,6 +671,8 @@ public static partial class EnumerableExtensions
                 {
                     yield break;
                 }
+
+                // MoveNext is called in the outer loop, so we don't call it here to avoid skipping elements.
             } while (enumerator.MoveNext());
         }
     }
