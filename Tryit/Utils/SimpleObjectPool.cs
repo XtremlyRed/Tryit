@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Text;
+using Tryit.Internals;
 
 namespace Tryit;
 
@@ -19,7 +20,7 @@ public static class SimpleObjectPool
     /// The reset callback clears the builder before it is re-enqueued.
     /// The default max pool size is configured to avoid unbounded growth.
     /// </remarks>
-    private static readonly SimpleObjectPool<StringBuilder> stringBuilderPool = SimpleObjectPool<StringBuilder>.Create(() => new StringBuilder(), sb => sb.Clear(), ushort.MaxValue);
+    public static readonly SimpleObjectPool<IStringBuilder> StringBuilder = new SimpleObjectPool<IStringBuilder>.StringBuilderDefaultSimpleObjectPool();
 
     /// <summary>
     /// Creates a new <see cref="SimpleObjectPool{T}"/> instance.
@@ -35,7 +36,7 @@ public static class SimpleObjectPool
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is <see langword="null"/>.</exception>
     public static SimpleObjectPool<T> Create<T>(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
     {
-        return SimpleObjectPool<T>.Create(factory, resetCallback, maxPoolSize);
+        return new SimpleObjectPool<T>.DefaultSimpleObjectPool<T, T>(factory, resetCallback, maxPoolSize);
     }
 
     /// <summary>
@@ -48,16 +49,7 @@ public static class SimpleObjectPool
     public static SimpleObjectPool<T> Create<T>(Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
         where T : new()
     {
-        return SimpleObjectPool<T>.Create(() => new T(), resetCallback, maxPoolSize);
-    }
-
-    /// <summary>
-    /// Gets the shared <see cref="StringBuilder"/> object pool.
-    /// </summary>
-    /// <returns>The singleton <see cref="StringBuilder"/> pool instance.</returns>
-    public static SimpleObjectPool<StringBuilder> StringBuilderPool()
-    {
-        return stringBuilderPool;
+        return new SimpleObjectPool<T>.DefaultSimpleObjectPool<T, T>(() => new T(), resetCallback, maxPoolSize);
     }
 }
 
@@ -73,36 +65,9 @@ public static class SimpleObjectPool
 /// <item><description><see cref="Rent"/>: obtains an instance from the pool, or creates one when the pool is empty.</description></item>
 /// <item><description><see cref="SimpleObjectPool{T}.Return(T)"/>: returns an instance back to the pool for future reuse.</description></item>
 /// </list>
-/// Use <see cref="Create"/> to build a default queue-based implementation.
 /// </remarks>
 public abstract class SimpleObjectPool<T>
 {
-    /// <summary>
-    /// Creates a default <see cref="SimpleObjectPool{T}"/> implementation.
-    /// </summary>
-    /// <param name="factory">
-    /// Factory function used to create a new object when the pool does not currently contain one.
-    /// </param>
-    /// <param name="resetCallback">
-    /// Optional callback executed when an object is returned to the pool.
-    /// This can be used to reset object state before reuse.
-    /// </param>
-    /// <param name="maxPoolSize">
-    /// Maximum number of items that may be retained in the internal queue.
-    /// When the limit is exceeded, subsequent returns may trigger an exception depending on implementation policy.
-    /// </param>
-    /// <returns>
-    /// A queue-based object pool instance.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="factory"/> is <see langword="null"/>.
-    /// </exception>
-    public static SimpleObjectPool<T> Create(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
-    {
-        _ = factory ?? throw new ArgumentNullException(nameof(factory));
-        return new DefaultSimpleObjectPool(factory, resetCallback, maxPoolSize);
-    }
-
     /// <summary>
     /// Default concrete implementation backed by a <see cref="Queue{T}"/>.
     /// </summary>
@@ -111,20 +76,23 @@ public abstract class SimpleObjectPool<T>
     /// The lock is held only while accessing the queue.
     /// Potentially expensive user code (<c>factory</c> and <c>resetCallback</c>) is executed outside the lock.
     /// </remarks>
-    private class DefaultSimpleObjectPool : SimpleObjectPool<T>
+    internal class DefaultSimpleObjectPool<TItem, TTarget> : SimpleObjectPool<TItem>
     {
         /// <summary>
         /// Creates new objects when the pool is empty.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Func<T> factory;
+        private readonly Func<TItem> factory;
 
         /// <summary>
         /// Optional state reset callback executed before an object is re-enqueued.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Action<T>? resetCallback;
+        private readonly Action<TItem>? resetCallback;
 
+        /// <summary>
+        /// Maximum number of items allowed in the pool before it is considered to have exceeded capacity.
+        /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly int maxPoolSize;
 
@@ -132,7 +100,7 @@ public abstract class SimpleObjectPool<T>
         /// LIFO storage for returned objects.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly Stack<T> stack = new Stack<T>();
+        private readonly Stack<TItem> stack = new Stack<TItem>();
 
         /// <summary>
         /// Spin-lock flag: 0 means unlocked, 1 means locked.
@@ -147,7 +115,7 @@ public abstract class SimpleObjectPool<T>
         /// <param name="resetCallback">Optional callback used to reset returned instances.</param>
         /// <param name="maxPoolSize">Maximum number of cached instances allowed in <see cref="stack"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is <see langword="null"/>.</exception>
-        internal DefaultSimpleObjectPool(Func<T> factory, Action<T>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
+        internal DefaultSimpleObjectPool(Func<TItem> factory, Action<TItem>? resetCallback = null, int maxPoolSize = ushort.MaxValue)
         {
             this.factory = factory ?? throw new ArgumentNullException(nameof(factory));
             this.resetCallback = resetCallback;
@@ -165,9 +133,9 @@ public abstract class SimpleObjectPool<T>
         /// <exception cref="InvalidOperationException">
         /// Thrown when the internal queue has exceeded <see cref="maxPoolSize"/>.
         /// </exception>
-        public override T Rent()
+        public override TItem Rent()
         {
-            T? item = default;
+            TItem? item = default;
 
             bool found = false;
 
@@ -222,11 +190,11 @@ public abstract class SimpleObjectPool<T>
         /// <remarks>
         /// The optional reset callback runs before queue insertion so the object is normalized for the next renter.
         /// </remarks>
-        public override void Return(T item)
+        public override void Return(TItem item)
         {
-            if (item is null)
+            if (item is not TTarget)
             {
-                throw new ArgumentNullException(nameof(item));
+                return;
             }
 
             // Execute caller-provided reset logic before storing the object.
@@ -258,20 +226,20 @@ public abstract class SimpleObjectPool<T>
         /// </summary>
         /// <param name="items">The collection of object instances to return.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="items"/> is <see langword="null"/>.</exception>
-        public override void Return(params IEnumerable<T> items)
+        public override void Return(params IEnumerable<TItem> items)
         {
             if (items is null)
             {
                 throw new ArgumentNullException(nameof(items));
             }
 
-            using IEnumerator<T> enumerator = items.GetEnumerator(); // Get an enumerator for the input collection.
+            using IEnumerator<TItem> enumerator = items.GetEnumerator(); // Get an enumerator for the input collection.
 
             if (resetCallback is not null) // If a reset callback is provided, we need to execute it for each item before returning them to the pool.
             {
                 while (enumerator.MoveNext())
                 {
-                    if (enumerator.Current is not null) // Only process non-null items to avoid exceptions in the reset callback.
+                    if (enumerator.Current is TTarget) // Only process non-null items to avoid exceptions in the reset callback.
                     {
                         resetCallback.Invoke(enumerator.Current); // Reset the state of the item before returning it to the pool.
                     }
@@ -304,6 +272,24 @@ public abstract class SimpleObjectPool<T>
                 // Always release the lock.
                 Interlocked.CompareExchange(ref flag, 0, 1);
             }
+        }
+    }
+
+    internal class StringBuilderDefaultSimpleObjectPool : DefaultSimpleObjectPool<IStringBuilder, StringBuilderAdapter>
+    {
+        internal StringBuilderDefaultSimpleObjectPool()
+            : base(() => new StringBuilderAdapter(), x => x.Clear(), ushort.MaxValue) { }
+
+        public override IStringBuilder Rent()
+        {
+            if (base.Rent() is not StringBuilderAdapter adapter)
+            {
+                throw new InvalidOperationException("Unexpected object type returned from the pool.");
+            }
+
+            adapter.pool = this;
+
+            return adapter;
         }
     }
 

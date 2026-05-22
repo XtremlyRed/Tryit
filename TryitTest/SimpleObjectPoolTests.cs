@@ -20,7 +20,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void GenericCreate_NullFactory_ShouldThrow()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => SimpleObjectPool<PooledItem>.Create(null!));
+        Assert.ThrowsException<ArgumentNullException>(() => SimpleObjectPool.Create<PooledItem>(null!));
     }
 
     [TestMethod]
@@ -43,7 +43,7 @@ public class SimpleObjectPoolTests
     public void Rent_WhenPoolEmpty_ShouldUseFactory()
     {
         int factoryCount = 0;
-        var pool = SimpleObjectPool<PooledItem>.Create(() =>
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() =>
         {
             factoryCount++;
             return new PooledItem();
@@ -58,7 +58,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void Return_ThenRent_ShouldReuseSameInstance()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem());
         var source = new PooledItem { Value = 10 };
 
         pool.Return(source);
@@ -70,7 +70,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void Return_Null_ShouldThrow()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem());
 
         Assert.ThrowsException<ArgumentNullException>(() => pool.Return((PooledItem)null!));
     }
@@ -78,7 +78,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void Return_ShouldInvokeResetCallback()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem(), x => x.Value = 0);
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem(), x => x.Value = 0);
 
         var item = new PooledItem { Value = 99 };
         pool.Return(item);
@@ -91,7 +91,7 @@ public class SimpleObjectPoolTests
     public void Return_ResetCallbackThrows_ShouldPropagate_AndNotEnqueue()
     {
         int factoryCount = 0;
-        var pool = SimpleObjectPool<PooledItem>.Create(
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(
             () =>
             {
                 factoryCount++;
@@ -111,7 +111,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void Return_MultipleItems_ShouldBeFifo()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem());
         var a = new PooledItem { Value = 1 };
         var b = new PooledItem { Value = 2 };
         var c = new PooledItem { Value = 3 };
@@ -129,7 +129,7 @@ public class SimpleObjectPoolTests
     public void Rent_AfterPoolDrained_ShouldUseFactoryAgain()
     {
         int factoryCount = 0;
-        var pool = SimpleObjectPool<PooledItem>.Create(() =>
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() =>
         {
             factoryCount++;
             return new PooledItem();
@@ -146,7 +146,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void MaxPoolSizeExceeded_ShouldThrowOnRent()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem(), maxPoolSize: 1);
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem(), maxPoolSize: 1);
 
         pool.Return(new PooledItem());
         pool.Return(new PooledItem());
@@ -157,7 +157,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void MaxPoolSizeBoundary_ShouldAllowWhenEqual()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem(), maxPoolSize: 2);
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem(), maxPoolSize: 2);
 
         pool.Return(new PooledItem { Value = 1 });
         pool.Return(new PooledItem { Value = 2 });
@@ -168,7 +168,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void NegativeMaxPoolSize_ShouldThrowOnRent()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem(), maxPoolSize: -1);
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem(), maxPoolSize: -1);
 
         Assert.ThrowsException<InvalidOperationException>(() => pool.Rent());
     }
@@ -176,8 +176,8 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void StringBuilderPool_ShouldReturnSingleton()
     {
-        var a = global::Tryit.SimpleObjectPool.StringBuilderPool();
-        var b = global::Tryit.SimpleObjectPool.StringBuilderPool();
+        var a = global::Tryit.SimpleObjectPool.StringBuilder;
+        var b = global::Tryit.SimpleObjectPool.StringBuilder;
 
         Assert.AreSame(a, b);
     }
@@ -185,7 +185,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void StringBuilderPool_ShouldClearBuilderOnReturn()
     {
-        var pool = global::Tryit.SimpleObjectPool.StringBuilderPool();
+        var pool = global::Tryit.SimpleObjectPool.StringBuilder;
         var sb = pool.Rent();
         sb.Append("hello");
 
@@ -200,7 +200,7 @@ public class SimpleObjectPoolTests
     [Timeout(10000)]
     public async Task Concurrent_ReturnThenRent_ShouldKeepAllObjects()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem());
         const int total = 400;
         var source = Enumerable.Range(0, total).Select(i => new PooledItem { Value = i }).ToArray();
 
@@ -217,7 +217,7 @@ public class SimpleObjectPoolTests
     public void Create_NonGenericFacadeAndGeneric_ShouldBothWork()
     {
         var facade = global::Tryit.SimpleObjectPool.Create(() => new PooledItem { Value = 1 });
-        var generic = SimpleObjectPool<PooledItem>.Create(() => new PooledItem { Value = 2 });
+        var generic = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem { Value = 2 });
 
         Assert.AreEqual(1, facade.Rent().Value);
         Assert.AreEqual(2, generic.Rent().Value);
@@ -226,7 +226,7 @@ public class SimpleObjectPoolTests
     [TestMethod]
     public void Return_ManyThenRentAll_ShouldPreserveOrder()
     {
-        var pool = SimpleObjectPool<PooledItem>.Create(() => new PooledItem());
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() => new PooledItem());
         var list = new List<PooledItem>();
 
         for (int i = 0; i < 50; i++)
@@ -246,7 +246,7 @@ public class SimpleObjectPoolTests
     public void FactoryThrow_ShouldPropagate_AndPoolRemainsUsable()
     {
         int call = 0;
-        var pool = SimpleObjectPool<PooledItem>.Create(() =>
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(() =>
         {
             call++;
             if (call == 1)
@@ -268,7 +268,7 @@ public class SimpleObjectPoolTests
     public void ResetCallbackThrow_ShouldNotBreakSubsequentOperations()
     {
         bool throwNow = true;
-        var pool = SimpleObjectPool<PooledItem>.Create(
+        var pool = global::Tryit.SimpleObjectPool.Create<PooledItem>(
             () => new PooledItem(),
             _ =>
             {
