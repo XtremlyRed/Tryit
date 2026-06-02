@@ -98,7 +98,7 @@ namespace TryitTest.Command
         [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ThrowsException_NoGlobalHandler_Rethrows()
         {
-            BindingCommand.SetGlobalCommandExceptionCallback(null);
+            BindingCommand.SetGlobalCommandExceptionCallback(null!);
 
             // Arrange
             var command = new BindingCommand(() => throw new InvalidOperationException());

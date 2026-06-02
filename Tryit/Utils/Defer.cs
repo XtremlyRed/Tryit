@@ -144,14 +144,16 @@ public static class Defer
         /// </summary>
         protected override
 #if NETSTANDARD2_0 || NETCOREAPP3_1
-        async
+        Task
+#else
+        ValueTask
 #endif
-        ValueTask InvokeAsync()
+        InvokeAsync()
         {
             action?.Invoke();
 
 #if NETSTANDARD2_0 || NETCOREAPP3_1
-            await Task.CompletedTask;
+            return Task.CompletedTask;
 #else
             return ValueTask.CompletedTask;
 #endif
@@ -192,7 +194,13 @@ public static class Defer
         /// <summary>
         /// Executes a task asynchronously if a function is defined.
         /// </summary>
-        protected override async ValueTask InvokeAsync()
+        protected override async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+        Task
+#else
+        ValueTask
+#endif
+        InvokeAsync()
         {
             if (taskfunc is not null)
             {
@@ -244,9 +252,11 @@ public static class Defer
         /// </summary>
         protected override
 #if NETSTANDARD2_0 || NETCOREAPP3_1
-        async
+        Task
+#else
+        ValueTask
 #endif
-        ValueTask InvokeAsync()
+        InvokeAsync()
         {
             if (action is not null)
             {
@@ -254,7 +264,7 @@ public static class Defer
             }
 
 #if NETSTANDARD2_0 || NETCOREAPP3_1
-            await Task.CompletedTask;
+            return Task.CompletedTask;
 #else
             return ValueTask.CompletedTask;
 #endif
@@ -304,7 +314,13 @@ public static class Defer
         /// <summary>
         /// Executes an asynchronous operation if a task function is defined.
         /// </summary>
-        protected override async ValueTask InvokeAsync()
+        protected override async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+        Task
+#else
+        ValueTask
+#endif
+        InvokeAsync()
         {
             if (taskfunc is not null)
             {
@@ -387,7 +403,13 @@ public static class Defer
             return invokeProxy.taskCompletionSource.Task;
         }
 
-        protected abstract ValueTask InvokeAsync();
+        protected abstract
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+        Task
+#else
+        ValueTask
+#endif
+        InvokeAsync();
 
         /// <summary>
         /// Delays execution for a specified time unless the object is disposed. It handles exceptions and returns a
@@ -415,7 +437,13 @@ public static class Defer
                 Behavior = null!;
             }
 
-            public async ValueTask InnerInvokeAsync()
+            public async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+            Task
+#else
+            ValueTask
+#endif
+            InnerInvokeAsync()
             {
                 if (await TaskEx.SafeDelayAsync(timeSpan, this.Token).ConfigureAwait(false) == false)
                 {
@@ -439,7 +467,13 @@ public static class Defer
                 await taskCompletionSource;
             }
 
-            private async ValueTask InvokeAsync()
+            private async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+            Task
+#else
+            ValueTask
+#endif
+            InvokeAsync()
             {
                 try
                 {

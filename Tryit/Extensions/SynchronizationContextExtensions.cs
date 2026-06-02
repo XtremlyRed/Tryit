@@ -18,7 +18,7 @@ namespace System.Threading;
 /// </list>
 /// <para>
 /// The <c>Post</c> overloads schedule work without waiting for completion, while <c>PostAsync</c> overloads return
-/// <see cref="ValueTask"/> / <see cref="ValueTask{TResult}"/> that complete when the posted delegate finishes.
+///  ValueTask / ValueTask{TResult}  that complete when the posted delegate finishes.
 /// </para>
 /// <para>
 /// Exceptions thrown by posted delegates are captured and propagated through the returned awaitable in <c>PostAsync</c> methods.
@@ -186,7 +186,14 @@ public static class SynchronizationContextExtensions
     /// <returns>A task that represents the asynchronous operation. The task completes when the action has finished executing on
     /// the context.</returns>
     /// <exception cref="ArgumentNullException">Thrown if either context or action is null.</exception>
-    public static async ValueTask PostAsync(this SynchronizationContext context, Action action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    PostAsync(this SynchronizationContext context, Action action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -228,7 +235,14 @@ public static class SynchronizationContextExtensions
     /// <returns>A task that represents the asynchronous operation. The task completes when the action has finished executing on
     /// the context.</returns>
     /// <exception cref="ArgumentNullException">Thrown if either context or action is null.</exception>
-    public static async ValueTask PostAsync<T1>(this SynchronizationContext context, T1 parameter1, Action<T1> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    PostAsync<T1>(this SynchronizationContext context, T1 parameter1, Action<T1> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -272,7 +286,13 @@ public static class SynchronizationContextExtensions
     /// <returns>A task that represents the asynchronous operation. The task completes when the action has finished executing on
     /// the context.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask PostAsync<T1, T2>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Action<T1, T2> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    PostAsync<T1, T2>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Action<T1, T2> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -312,7 +332,13 @@ public static class SynchronizationContextExtensions
     /// <returns>A task that represents the asynchronous operation. The task completes when the posted delegate has finished
     /// executing.</returns>
     /// <exception cref="ArgumentNullException">Thrown if either context or action is null.</exception>
-    public static async ValueTask PostAsync(this SynchronizationContext context, Func<Task> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    PostAsync(this SynchronizationContext context, Func<Task> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -354,7 +380,13 @@ public static class SynchronizationContextExtensions
     /// <returns>A task that represents the asynchronous operation. The task completes when the posted action has finished
     /// executing.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask PostAsync<T1>(this SynchronizationContext context, T1 parameter1, Func<T1, Task> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    PostAsync<T1>(this SynchronizationContext context, T1 parameter1, Func<T1, Task> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -398,7 +430,13 @@ public static class SynchronizationContextExtensions
     /// <param name="action">The asynchronous delegate to invoke, which accepts two parameters and returns a Task. Cannot be null.</param>
     /// <returns>A Task that represents the asynchronous operation and completes when the delegate has finished executing.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask PostAsync<T1, T2>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, Task> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    PostAsync<T1, T2>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, Task> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -439,7 +477,13 @@ public static class SynchronizationContextExtensions
     /// <param name="action">A function that returns a Task producing the result to be executed on the specified context. Cannot be null.</param>
     /// <returns>A ValueTask that represents the asynchronous operation. The task's result is the value produced by the action.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T>(this SynchronizationContext context, Func<Task<T>> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    <T> PostAsync<T>(this SynchronizationContext context, Func<Task<T>> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -481,7 +525,14 @@ public static class SynchronizationContextExtensions
     /// <param name="action">The asynchronous function to execute on the specified context. Cannot be null.</param>
     /// <returns>A ValueTask that represents the asynchronous operation. The result contains the value returned by the action.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T1, T>(this SynchronizationContext context, T1 parameter1, Func<T1, Task<T>> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    <T> PostAsync<T1, T>(this SynchronizationContext context, T1 parameter1, Func<T1, Task<T>> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -527,7 +578,13 @@ public static class SynchronizationContextExtensions
     /// producing a result of type T. Cannot be null.</param>
     /// <returns>A ValueTask that represents the asynchronous operation. The result contains the value returned by the action.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T1, T2, T>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, Task<T>> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    <T> PostAsync<T1, T2, T>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, Task<T>> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -568,7 +625,13 @@ public static class SynchronizationContextExtensions
     /// <returns>A ValueTask that represents the asynchronous operation. The task result contains the value returned by the
     /// delegate.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T>(this SynchronizationContext context, Func<T> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    <T> PostAsync<T>(this SynchronizationContext context, Func<T> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -615,7 +678,13 @@ public static class SynchronizationContextExtensions
     /// <returns>A ValueTask that represents the asynchronous operation. The task result contains the value returned by the
     /// action.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T1, T>(this SynchronizationContext context, T1 parameter1, Func<T1, T> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    <T> PostAsync<T1, T>(this SynchronizationContext context, T1 parameter1, Func<T1, T> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));
@@ -664,7 +733,13 @@ public static class SynchronizationContextExtensions
     /// <param name="action">The function to execute, which takes two parameters and returns a result. Cannot be null.</param>
     /// <returns>A ValueTask that represents the asynchronous operation. The result contains the value returned by the action.</returns>
     /// <exception cref="ArgumentNullException">Thrown if context or action is null.</exception>
-    public static async ValueTask<T> PostAsync<T1, T2, T>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, T> action)
+    public static async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    <T> PostAsync<T1, T2, T>(this SynchronizationContext context, T1 parameter1, T2 parameter2, Func<T1, T2, T> action)
     {
         _ = action ?? throw new ArgumentNullException(nameof(action));
         _ = context ?? throw new ArgumentNullException(nameof(context));

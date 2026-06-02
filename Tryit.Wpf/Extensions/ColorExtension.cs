@@ -1,4 +1,6 @@
-﻿namespace Tryit.Wpf;
+﻿using ColorConverter = System.Windows.Media.ColorConverter;
+
+namespace Tryit.Wpf;
 
 /// <summary>
 /// Represents a color with RGBA channels and provides a method to create a color object based on the platform.
