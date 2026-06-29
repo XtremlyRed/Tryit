@@ -44,6 +44,11 @@ public abstract partial class ValueConverterBase<Input, InputParameter> : Markup
     /// <exception cref="ArgumentException">Thrown when the provided object is not of Input type.</exception>
     protected virtual Input InputConvert(object? value)
     {
+        if (value is null)
+        {
+            return default!;
+        }
+
         if (value is not Input targetValue)
         {
             throw new ArgumentException($"current value type is not {typeof(Input).FullName}");
@@ -60,6 +65,10 @@ public abstract partial class ValueConverterBase<Input, InputParameter> : Markup
     /// <exception cref="ArgumentException">Thrown when the provided value is not of InputParameter type.</exception>
     protected virtual InputParameter InputParameterConvert(object? value)
     {
+        if (value is null)
+        {
+            return default!;
+        }
         if (value is not InputParameter targetValue)
         {
             throw new ArgumentException($"current value type is not {typeof(InputParameter).FullName}");

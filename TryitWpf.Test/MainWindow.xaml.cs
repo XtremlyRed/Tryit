@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Windows;
-
 using Tryit.Wpf;
 
 namespace TryitWpf.Test;
@@ -16,33 +15,10 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        ConcurrentBag<int> bag = new(Enumerable.Range(0, 10));
-
-
-        var count = 0;
-
-       
-
-
-        while (count++<100)
-        {
-            if(bag.TryTake(out var value))
-            {
-                Debug.WriteLine(value);
-
-                bag.Add(value);
-
-            }
-        }
-
-
-
     }
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
         DataContext = Enumerable.Range(0, Random.Shared.Next(1, 5)).ToArray();
-
     }
 }
