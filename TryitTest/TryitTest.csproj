@@ -1,7 +1,6 @@
 <Project Sdk="MSTest.Sdk/3.6.4">
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -16,8 +15,5 @@
     <Folder Include="Utils\" />
   </ItemGroup>
 
-
-	<Import Project="$(SolutionDir)\GlobalCompileSettings.Targets" />
-
-
+  <!--<Import Project="$(SolutionDir)\GlobalCompileSettings.Targets" />-->
 </Project>

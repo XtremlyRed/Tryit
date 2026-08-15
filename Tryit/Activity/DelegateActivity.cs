@@ -46,7 +46,13 @@ public class FuncTaskActivity : Activity
     /// <remarks>
     /// Any exception produced by the delegate is propagated through the returned task.
     /// </remarks>
-    public override async Task RunAsync(IContext context)
+    public override async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    RunAsync(IContext context)
     {
         await funcTask(context).ConfigureAwait(false);
     }
@@ -96,9 +102,22 @@ public class ActionActivity : Activity
     /// <remarks>
     /// Exceptions thrown by the delegate are propagated directly to the caller before the completed task is returned.
     /// </remarks>
-    public override Task RunAsync(IContext context)
+    public override
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    RunAsync(IContext context)
     {
         action(context);
+
+#if NETSTANDARD2_0 || NETCOREAPP3_1
         return Task.CompletedTask;
+#else
+        return ValueTask.CompletedTask;
+
+#endif
     }
 }

@@ -30,20 +30,30 @@ public class ParallelActivity : CompositeActivity
     /// returned task completes only after all child activities have finished. If one or more child
     /// activities fail, their exceptions are captured and propagated through the awaited completion objects.
     /// </remarks>
-    public override async Task RunAsync(IContext context)
+    public override async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    RunAsync(IContext context)
     {
-        var aMaps = new AMap[activities.Count];
+        var activityCompletions = new ActivityCompletionSource[activities.Count];
 
         var index = 0;
 
         foreach (var item in activities)
         {
-            AMap aMap = aMaps[index++] = new AMap(item, context);
+            ActivityCompletionSource aMap = activityCompletions[index++] = new ActivityCompletionSource(item, context);
 
-            ThreadPool.QueueUserWorkItem(static async c => await ((AMap)c!).RunAsync().ConfigureAwait(false), aMap);
+            ThreadPool.QueueUserWorkItem(static async c => await ((ActivityCompletionSource)c!).RunAsync().ConfigureAwait(false), aMap);
         }
 
-        await aMaps;
+        for (int i = 0; i < activityCompletions.Length; i++)
+        {
+            await activityCompletions[i];
+        }
     }
 
     /// <summary>
@@ -54,7 +64,7 @@ public class ParallelActivity : CompositeActivity
     /// queued work completes, the inherited <see cref="TaskCompletionSource{TResult}"/> is completed with
     /// either a successful result or an exception.
     /// </remarks>
-    class AMap(Activity Activity, IContext Context) : TaskCompletionSource<bool>
+    class ActivityCompletionSource(Activity Activity, IContext Context) : TaskCompletionSource<bool>
     {
         /// <summary>
         /// Executes the stored activity and completes the underlying task completion source.
@@ -65,7 +75,13 @@ public class ParallelActivity : CompositeActivity
         /// result. If the activity throws an exception, that exception is captured and assigned to the task
         /// completion source so it can be observed by the caller.
         /// </remarks>
-        public async Task RunAsync()
+        public async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+        Task
+#else
+        ValueTask
+#endif
+        RunAsync()
         {
             try
             {

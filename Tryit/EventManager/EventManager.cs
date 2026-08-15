@@ -10,10 +10,10 @@ namespace Tryit;
 public class EventManager : IEventManager
 {
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private List<object> asyncEvents = new List<object>();
+    private readonly List<object> asyncEvents = new List<object>();
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private List<object> syncEvents = new List<object>();
+    private readonly List<object> syncEvents = new List<object>();
 
     /// <summary>
     /// Retrieves or creates an asynchronous event of a specified type.

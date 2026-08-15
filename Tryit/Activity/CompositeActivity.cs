@@ -54,7 +54,14 @@ public class CompositeActivity : Activity
     /// it is skipped. If any child activity throws an exception, execution stops and the exception is
     /// propagated to the caller.
     /// </remarks>
-    public override async Task RunAsync(IContext context)
+    public override async
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+
+    RunAsync(IContext context)
     {
         foreach (var activity in activities)
         {

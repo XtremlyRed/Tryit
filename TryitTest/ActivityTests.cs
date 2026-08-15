@@ -20,12 +20,15 @@ public class ActivityTests
     {
         var context = new Context();
         var invoked = false;
-        var activity = new FuncTaskActivity("load", async ctx =>
-        {
-            invoked = true;
-            ctx.SetValue("status", "done");
-            await Task.Yield();
-        });
+        var activity = new FuncTaskActivity(
+            "load",
+            async ctx =>
+            {
+                invoked = true;
+                ctx.SetValue("status", "done");
+                await Task.Yield();
+            }
+        );
 
         await activity.RunAsync(context);
 
@@ -45,11 +48,14 @@ public class ActivityTests
     {
         var context = new Context();
         var invoked = false;
-        var activity = new ActionActivity("save", ctx =>
-        {
-            invoked = true;
-            ctx.SetValue("count", 1);
-        });
+        var activity = new ActionActivity(
+            "save",
+            ctx =>
+            {
+                invoked = true;
+                ctx.SetValue("count", 1);
+            }
+        );
 
         var task = activity.RunAsync(context);
 
@@ -75,32 +81,43 @@ public class ActivityTests
         var runningCount = 0;
         var maxRunningCount = 0;
 
-        composite.Add(new Activity[]
-        {
-            new FuncTaskActivity("first", async ctx =>
+        composite.Add(
+            new Activity[]
             {
-                ctx.SetValue("step-1", "completed");
-                TrackConcurrency(ref runningCount, ref maxRunningCount);
-                Interlocked.Increment(ref executionCount);
-                await Task.Delay(30);
-                Interlocked.Decrement(ref runningCount);
-            }),
-            new FuncTaskActivity("second", async ctx =>
-            {
-                Assert.AreEqual("completed", ctx.GetValue<string>("step-1"));
-                TrackConcurrency(ref runningCount, ref maxRunningCount);
-                Interlocked.Increment(ref executionCount);
-                await Task.Delay(30);
-                Interlocked.Decrement(ref runningCount);
-            }),
-            new FuncTaskActivity("third", async _ =>
-            {
-                TrackConcurrency(ref runningCount, ref maxRunningCount);
-                Interlocked.Increment(ref executionCount);
-                await Task.Delay(30);
-                Interlocked.Decrement(ref runningCount);
-            }),
-        });
+                new FuncTaskActivity(
+                    "first",
+                    async ctx =>
+                    {
+                        ctx.SetValue("step-1", "completed");
+                        TrackConcurrency(ref runningCount, ref maxRunningCount);
+                        Interlocked.Increment(ref executionCount);
+                        await Task.Delay(30);
+                        Interlocked.Decrement(ref runningCount);
+                    }
+                ),
+                new FuncTaskActivity(
+                    "second",
+                    async ctx =>
+                    {
+                        Assert.AreEqual("completed", ctx.GetValue<string>("step-1"));
+                        TrackConcurrency(ref runningCount, ref maxRunningCount);
+                        Interlocked.Increment(ref executionCount);
+                        await Task.Delay(30);
+                        Interlocked.Decrement(ref runningCount);
+                    }
+                ),
+                new FuncTaskActivity(
+                    "third",
+                    async _ =>
+                    {
+                        TrackConcurrency(ref runningCount, ref maxRunningCount);
+                        Interlocked.Increment(ref executionCount);
+                        await Task.Delay(30);
+                        Interlocked.Decrement(ref runningCount);
+                    }
+                ),
+            }
+        );
 
         await composite.RunAsync(context);
 
@@ -130,11 +147,14 @@ public class ActivityTests
         var context = new Context();
         var invoked = false;
 
-        composite.Add("sync-step", ctx =>
-        {
-            invoked = true;
-            ctx.SetValue("mode", "sync");
-        });
+        composite.Add(
+            "sync-step",
+            ctx =>
+            {
+                invoked = true;
+                ctx.SetValue("mode", "sync");
+            }
+        );
 
         var child = GetChildActivities(composite).Single();
 
@@ -154,12 +174,15 @@ public class ActivityTests
         var context = new Context();
         var invoked = false;
 
-        composite.Add("async-step", async ctx =>
-        {
-            invoked = true;
-            ctx.SetValue("mode", "async");
-            await Task.Yield();
-        });
+        composite.Add(
+            "async-step",
+            async ctx =>
+            {
+                invoked = true;
+                ctx.SetValue("mode", "async");
+                await Task.Yield();
+            }
+        );
 
         var child = GetChildActivities(composite).Single();
 
@@ -196,12 +219,7 @@ public class ActivityTests
         var runningCount = 0;
         var maxRunningCount = 0;
 
-        parallel.Add(new Activity[]
-        {
-            new FuncTaskActivity("first", _ => ExecuteParallelWorkAsync()),
-            new FuncTaskActivity("second", _ => ExecuteParallelWorkAsync()),
-            new FuncTaskActivity("third", _ => ExecuteParallelWorkAsync()),
-        });
+        parallel.Add(new Activity[] { new FuncTaskActivity("first", _ => ExecuteParallelWorkAsync()), new FuncTaskActivity("second", _ => ExecuteParallelWorkAsync()), new FuncTaskActivity("third", _ => ExecuteParallelWorkAsync()) });
 
         await parallel.RunAsync(new Context());
 
@@ -231,12 +249,9 @@ public class ActivityTests
         var parallel = new ParallelActivity("parallel");
         var expected = new InvalidOperationException("boom");
 
-        parallel.Add(new Activity[]
-        {
-            new FuncTaskActivity("fails", _ => Task.FromException(expected)),
-        });
+        parallel.Add(new Activity[] { new FuncTaskActivity("fails", _ => Task.FromException(expected)) });
 
-        var exception = await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => parallel.RunAsync(new Context()));
+        var exception = await Assert.ThrowsExceptionAsync<InvalidOperationException>(async () => await parallel.RunAsync(new Context()));
 
         Assert.AreSame(expected, exception);
     }

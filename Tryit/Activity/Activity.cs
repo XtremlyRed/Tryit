@@ -37,7 +37,13 @@ public abstract class Activity
     /// work. Any exception thrown during execution will be propagated to the caller through the returned
     /// task.
     /// </remarks>
-    public abstract Task RunAsync(IContext context);
+    public abstract
+#if NETSTANDARD2_0 || NETCOREAPP3_1
+    Task
+#else
+    ValueTask
+#endif
+    RunAsync(IContext context);
 }
 
 /// <summary>

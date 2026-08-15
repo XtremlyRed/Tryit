@@ -11,3 +11,7 @@
 /TryitTest/obj
 /TryitWpf.Test/bin/Debug/net8.0-windows
 /TryitWpf.Test/obj
+/TryitWpf.Tests/obj
+/TryitWpf.Tests/bin/Release/net8.0-windows
+/TryitTest/bin
+/TryitWpf.Tests/bin/Debug/net8.0-windows
